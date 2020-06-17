@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="gui.AboutController"
+            prefHeight="600.0" prefWidth="600.0" alignment="CENTER"
+            spacing="40">
+    <style>
+        -fx-background-color: rgb(153, 204, 255);
+        -fx-font: 14 system;
+    </style>
+    <Label wrapText="true" maxWidth="300">
+        <text>
+            This is a simple Tic Tac Toe application that will let you play against another human,
+            play against a bot, or watch two bots play against each other. The random bot will select
+            random moves, while the minimax bot plays perfectly. Because of the computational strain
+            required to play larger boards perfectly, the minimax bot is only allowed to play on the
+            3x3 board.
+        </text>
+    </Label>
+    <Label text="Written by Matthew Gregoire, 2020"/>
+    <Button fx:id="back" text="Back to Menu" onAction="#backToStart"/>
+
+</VBox>

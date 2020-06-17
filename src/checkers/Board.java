@@ -1,6 +1,8 @@
 package checkers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Board {
 
@@ -13,82 +15,124 @@ public class Board {
     }
 
     private int size;
-    private Piece[][] board;
+    private Square[][] board;
     private Player turn; // The player who needs to go next.
     private HashMap<Player, AgentType> identities;
+    private List<Piece> redPieces;
+    private List<Piece> whitePieces;
 
     public Board(int size) {
+        if ((size % 2) != 0) {
+            throw new IllegalArgumentException("Board must have even size.");
+        }
         this.size = size;
 
-        // Populate the empty board. In general, we'll use the normal
-        // pattern and leave the middle two rows empty, which agrees
-        // with the standard 8x8 and 10x10 versions.
-        this.board = new Piece[size][size];
+        // Populate the board with an array of squares.
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                int[] coord = {j, i};
+                board[i][j] = new Square(null, j, i);
+            }
+        }
 
+        // Put white pieces into the top half of the board.
+        int tracker = 0;
+        for (int i = 0; i < size/2 - 1; i++) {
+            for (int j = 0; j < size; j++) {
+                if (tracker % 2 == 1) {
+                    int[] coord = {j, i};
+                    Man man = new Man(this, coord, Player.WHITE);
+                    board[i][j].setContents(man);
+                    whitePieces.add(man);
+                }
+                tracker++;
+            }
+        }
 
-        this.turn = Player.RED;
-        this.identities = new HashMap<Player, AgentType>();
+        // Put red pieces into the lower half of the board.
+        if ((size/2) % 2 == 0) {
+            tracker = 0;
+        } else {
+            tracker = 1;
+        }
+        for (int i = size/2 + 1; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (tracker % 2 == 1) {
+                    int[] coord = {j, i};
+                    Man man = new Man(this, coord, Player.RED);
+                    board[i][j].setContents(man);
+                    redPieces.add(man);
+                }
+                tracker++;
+            }
+        }
     }
 
-    private Board(int size, Piece[][] board, Player turn) {
-        this.size = size;
+    // Internal constructor used only for copying the board.
+    private Board(Square[][] board, Player turn, HashMap<Player, AgentType> identities,
+                  List<Piece> redPieces, List<Piece> whitePieces) {
+        this.size = board.length;
         this.board = board;
         this.turn = turn;
+        this.identities = identities;
+        this.redPieces = redPieces;
+        this.whitePieces = whitePieces;
     }
 
     public boolean isOnGrid(int x, int y) {
         return (0 <= x && x < size) && (0 <= y && y < size);
     }
 
-    // TODO; implement
-    private boolean isLegalOneStepMove(Piece piece, int x, int y) {
-        return false;
+    public Square getSquare(int x, int y) {
+        if (isOnGrid(x, y)) {
+            return board[y][x];
+        } else {
+            return null;
+        }
     }
 
-    // TODO: implement
-    public boolean isLegalMove(Piece piece, int x, int y) {
-        return false;
-    }
+    public List<Move> getLegalMovesFor(Piece piece) {
 
-    // TODO: implement
-    public void applyMove(int x, int y) {
+        List<Move> legalMoves = new ArrayList<Move>();
 
-    }
+        Square[] neighbors = piece.getNeighbors();
 
-    // TODO: implement
-    public Player findWinner() {
-        return null;
-    }
+        for (Square n : neighbors) {
+            if (n != null) {
+                if (n.getContents() == null) {
+                    if (piece instanceof Man) {
+                        Square s = piece.getLocation();
+                        if (piece.color == Player.RED && n.getY() - s.getY() > 0) {
+                            legalMoves.add(new Move(piece, n));
+                        } else if (piece.color == Player.WHITE && n.getY() - s.getY() < 0) {
+                            legalMoves.add(new Move(piece, n));
+                        }
+                    } else {
+                        legalMoves.add(new Move(piece, n));
+                    }
+                } else {
 
-    // TODO: implement
-    public boolean isOver() {
-        return false;
-    }
+                }
+            }
+        }
 
-    public int getSize() {
-        return size;
-    }
-
-    public Player getTurn() {
-        return turn;
-    }
-
-    public void setPlayer(Player key, AgentType value) {
-        identities.put(key, value);
-    }
-
-    public AgentType whoHasTheTurn() {
-        return identities.get(turn);
+        return legalMoves;
     }
 
     public Board copy() {
-        Piece[][] copiedBoard = new Piece[size][size];
+        Square[][] copiedBoard = new Square[size][size];
+
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                copiedBoard[i][j] = board[i][j];
+                Square square = board[i][j];
+                Piece piece = square.getContents();
+                Piece copiedPiece;
+                if (piece != null) {
+                }
             }
         }
-        return new Board(size, copiedBoard, turn);
+
+        return null;
     }
 
 }

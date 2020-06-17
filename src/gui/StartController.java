@@ -22,8 +22,8 @@ public class StartController {
     @FXML private RadioButton bvb_button = new RadioButton();
 
     @FXML private ToggleGroup player = new ToggleGroup();
-    @FXML private RadioButton x_button = new RadioButton();
-    @FXML private RadioButton o_button = new RadioButton();
+    @FXML private RadioButton red_button = new RadioButton();
+    @FXML private RadioButton white_button = new RadioButton();
 
     @FXML private ToggleGroup board_size = new ToggleGroup();
     @FXML private RadioButton three = new RadioButton();
@@ -34,12 +34,12 @@ public class StartController {
     @FXML private RadioButton random = new RadioButton();
     @FXML private RadioButton minimax = new RadioButton();
 
-    private AgentType player_X;
-    private AgentType player_O;
+    private AgentType player_red;
+    private AgentType player_white;
 
     @FXML private void initialize() {
 
-        RadioButton[] buttons = {hvh_button, hvb_button, bvb_button, x_button, o_button,
+        RadioButton[] buttons = {hvh_button, hvb_button, bvb_button, red_button, white_button,
         three, four, five, random, minimax};
 
         for (RadioButton button : buttons) {
@@ -51,8 +51,8 @@ public class StartController {
         hvb_button.setToggleGroup(who);
         bvb_button.setToggleGroup(who);
 
-        x_button.setToggleGroup(player);
-        o_button.setToggleGroup(player);
+        red_button.setToggleGroup(player);
+        white_button.setToggleGroup(player);
 
         three.setToggleGroup(board_size);
         four.setToggleGroup(board_size);
@@ -62,7 +62,7 @@ public class StartController {
         minimax.setToggleGroup(whichBot);
 
         who.selectToggle(hvb_button);
-        player.selectToggle(x_button);
+        player.selectToggle(red_button);
         board_size.selectToggle(three);
         whichBot.selectToggle(minimax);
 
@@ -89,8 +89,8 @@ public class StartController {
         disablePlayer.bind(hvh_button.selectedProperty().or(bvb_button.selectedProperty()));
 
         // The Player button isn't relevant when the user isn't doing human vs. bot.
-        x_button.disableProperty().bind(disablePlayer);
-        o_button.disableProperty().bind(disablePlayer);
+        red_button.disableProperty().bind(disablePlayer);
+        white_button.disableProperty().bind(disablePlayer);
 
         // The Bot button isn't relevant when the user selects human vs. human.
         random.disableProperty().bind(hvh_button.selectedProperty());
@@ -105,19 +105,19 @@ public class StartController {
         RadioButton bot_button = (RadioButton) whichBot.getSelectedToggle();
 
         if (who_is_button.equals(hvh_button)) {
-            player_X = AgentType.HUMAN;
-            player_O = AgentType.HUMAN;
+            player_red = AgentType.HUMAN;
+            player_white = AgentType.HUMAN;
         } else if (who_is_button.equals(hvb_button)) {
-            if (player_is_button.equals(x_button)) {
-                player_X = AgentType.HUMAN;
-                player_O = AgentType.BOT;
+            if (player_is_button.equals(red_button)) {
+                player_red = AgentType.HUMAN;
+                player_white = AgentType.BOT;
             } else {
-                player_X = AgentType.BOT;
-                player_O = AgentType.HUMAN;
+                player_red = AgentType.BOT;
+                player_white = AgentType.HUMAN;
             }
         } else {
-            player_X = AgentType.BOT;
-            player_O = AgentType.BOT;
+            player_red = AgentType.BOT;
+            player_white = AgentType.BOT;
         }
 
         int s;
@@ -146,7 +146,7 @@ public class StartController {
         Stage window = (Stage) ((Node) e.getSource()).getScene().getWindow();
         window.setScene(playScene);
 
-        playController.setOptions(player_X, player_O, s, bot);
+        playController.setOptions(player_red, player_white, s, bot);
     }
 
     // Switch to "About" scene when the user presses the "About" button.

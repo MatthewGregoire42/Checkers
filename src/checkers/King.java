@@ -1,25 +1,23 @@
 package checkers;
 
-public class King implements Piece {
+import java.util.ArrayList;
+import java.util.List;
 
-    private Board board;
-    private int[] location;
-    private Board.Player color;
+public class King extends Piece {
 
-    public King(Board board, int[] startingLocation, Board.Player color) {
-        this.board = board;
-        this.location = startingLocation;
-        this.color = color;
+    public King(Board board, Square startingLocation, Board.Player player) {
+        super(board, startingLocation, player);
     }
 
     // TODO: implement
     @Override
-    public Move[] getLegalMoves() {
-        return new Move[0];
+    public List<Move> getLegalMoves() {
+        return new ArrayList<>();
     }
 
     @Override
-    public int[] getLocation() {
-        return location;
+    public Piece copy() {
+        return null;
     }
+
 }

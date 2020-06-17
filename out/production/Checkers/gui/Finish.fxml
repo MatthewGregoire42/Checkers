@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.image.ImageView?>
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="gui.FinishController">
+    <ImageView fx:id="imgView"
+               disable="false"
+               preserveRatio="true" />
+    <VBox spacing="40"
+          fx:id="vbox">
+        <style>
+            -fx-background-color: rgba(255, 175, 175, 0.8);
+            -fx-font: 24 system;
+        </style>
+        <Label text="Game over!"/>
+        <Label fx:id="label"/>
+        <Button text="Replay" onAction="#backToPlay"/>
+        <Button text="Back to Menu" onAction="#backToStart"/>
+
+        <prefWidth>600</prefWidth>
+        <prefHeight>600</prefHeight>
+        <alignment>CENTER</alignment>
+    </VBox>
+</StackPane>

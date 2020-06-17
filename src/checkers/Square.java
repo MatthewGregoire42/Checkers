@@ -1,5 +1,12 @@
 package checkers;
 
+/**
+ * The Square class handles all positional data for each square
+ * of the board. Each square either has one piece or null as its
+ * contents. If in the Board class, a square is null, it's not
+ * on the board.
+ */
+
 public class Square {
 
     private Piece contents;
@@ -28,10 +35,6 @@ public class Square {
     }
 
     public Square copy() {
-        Square copied = new Square(contents.copy(), x, y);
-        if (copied.contents != null) {
-            copied.contents.location = copied;
-        }
-        return copied;
+        return new Square(contents.copy(), x, y);
     }
 }

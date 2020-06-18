@@ -3,6 +3,8 @@ package gui;
 import ai.Agent;
 import ai.RandomAI;
 import checkers.Move;
+import checkers.Piece;
+import checkers.Square;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -117,11 +119,41 @@ public class PlayController {
     // TODO: implement
     private void drawBoard() {
         int s = gameboard.getSize();
+        int squareLength = X_DIM/s;
+        int count = 0;
+        for (int i = 0; i < s; i++) {
+            for (int j = 0; j < s; j++) {
+                if (count % 2 == 0) {
+                    gc.setFill(Color.web("#CAB7A8"));
+                } else {
+                    gc.setFill(Color.web("#6A4E4B"));
+                }
+                gc.fillRect(j*squareLength, i*squareLength, squareLength, squareLength);
+                count++;
+                Piece p = gameboard.getSquare(j, i).getContents();
+                if (p != null) {
+                    drawPiece(gameboard.getSquare(j,i), p.getPlayer());
+                }
+            }
+            count++;
+        }
     }
 
     // TODO: implement
     private void drawMove(Move move, Player player) {
         int s = gameboard.getSize();
+    }
+
+    private void drawPiece(Square square, Player player) {
+        if (player == Player.RED) {
+            gc.setFill(Color.web("#cc0000"));
+        } else {
+            gc.setFill(Color.web("#f2f2f2"));
+        }
+        int x = square.getX();
+        int y = square.getY();
+        int s = gameboard.getSize();
+        gc.fillOval(x*(X_DIM/s), y*(Y_DIM/s), X_DIM/s, Y_DIM/s);
     }
 
     // Execute this code when the game ends. We need to do the song and dance

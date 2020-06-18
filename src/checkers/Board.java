@@ -1,9 +1,6 @@
 package checkers;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class Board {
 
@@ -18,7 +15,7 @@ public class Board {
     private int size;
     private Square[][] board;
     private Player turn; // The player who needs to go next.
-    private HashMap<Player, AgentType> identities;
+    private Map<Player, AgentType> identities;
     private List<Square> redPieceSquares;
     private List<Square> whitePieceSquares;
 
@@ -27,6 +24,10 @@ public class Board {
             throw new IllegalArgumentException("Board must have even size.");
         }
         this.size = size;
+        this.board = new Square[size][size];
+        this.whitePieceSquares = new ArrayList<>();
+        this.redPieceSquares = new ArrayList<>();
+        this.identities = new HashMap<>();
 
         // Populate the board with an array of empty squares.
         for (int i = 0; i < size; i++) {
@@ -48,13 +49,14 @@ public class Board {
                 }
                 tracker++;
             }
+            tracker++;
         }
 
         // Put red pieces into the lower half of the board.
         if ((size/2) % 2 == 0) {
-            tracker = 0;
-        } else {
             tracker = 1;
+        } else {
+            tracker = 0;
         }
         for (int i = size/2 + 1; i < size; i++) {
             for (int j = 0; j < size; j++) {
@@ -66,6 +68,7 @@ public class Board {
                 }
                 tracker++;
             }
+            tracker++;
         }
     }
 

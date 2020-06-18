@@ -5,10 +5,11 @@ import java.util.List;
 
 import checkers.Board;
 import checkers.Board.*;
+import checkers.Move;
 
 public class MinimaxAI implements Agent {
     @Override
-    public int[] chooseMove(Board board) {
-        return new int[0];
+    public Move chooseMove(Board board) {
+        return null;
     }
 }

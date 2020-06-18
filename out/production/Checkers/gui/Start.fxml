@@ -18,9 +18,9 @@
     </Label>
     <HBox spacing="20" alignment="CENTER">
         <Label text="Grid size:" style="-fx-highlight-text-fill: #fff;"/>
-        <RadioButton text="3" toggleGroup="$board_size" fx:id="three"/>
-        <RadioButton text="4" toggleGroup="$board_size" fx:id="four"/>
-        <RadioButton text="5" toggleGroup="$board_size" fx:id="five"/>
+        <RadioButton text="6" toggleGroup="$board_size" fx:id="six"/>
+        <RadioButton text="8" toggleGroup="$board_size" fx:id="eight"/>
+        <RadioButton text="10" toggleGroup="$board_size" fx:id="ten"/>
     </HBox>
     <HBox spacing="20" alignment="CENTER">
         <Label text="Which bot?"/>

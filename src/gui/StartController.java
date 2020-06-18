@@ -26,9 +26,9 @@ public class StartController {
     @FXML private RadioButton white_button = new RadioButton();
 
     @FXML private ToggleGroup board_size = new ToggleGroup();
-    @FXML private RadioButton three = new RadioButton();
-    @FXML private RadioButton four = new RadioButton();
-    @FXML private RadioButton five = new RadioButton();
+    @FXML private RadioButton six = new RadioButton();
+    @FXML private RadioButton eight = new RadioButton();
+    @FXML private RadioButton ten = new RadioButton();
 
     @FXML private ToggleGroup whichBot = new ToggleGroup();
     @FXML private RadioButton random = new RadioButton();
@@ -40,7 +40,7 @@ public class StartController {
     @FXML private void initialize() {
 
         RadioButton[] buttons = {hvh_button, hvb_button, bvb_button, red_button, white_button,
-        three, four, five, random, minimax};
+        six, eight, ten, random, minimax};
 
         for (RadioButton button : buttons) {
             button.getStyleClass().remove("radio-button");
@@ -54,16 +54,16 @@ public class StartController {
         red_button.setToggleGroup(player);
         white_button.setToggleGroup(player);
 
-        three.setToggleGroup(board_size);
-        four.setToggleGroup(board_size);
-        five.setToggleGroup(board_size);
+        six.setToggleGroup(board_size);
+        eight.setToggleGroup(board_size);
+        ten.setToggleGroup(board_size);
 
         random.setToggleGroup(whichBot);
         minimax.setToggleGroup(whichBot);
 
         who.selectToggle(hvb_button);
         player.selectToggle(red_button);
-        board_size.selectToggle(three);
+        board_size.selectToggle(eight);
         whichBot.selectToggle(minimax);
 
         BooleanProperty disableLarge = new SimpleBooleanProperty(false);
@@ -72,18 +72,18 @@ public class StartController {
 
         // Only allow 3x3 for minimax. But we also want to allow 3x3 when minimax
         // is not selected, so we add a listener instead of using a direct binding.
-        four.setDisable(true);
-        five.setDisable(true);
-        minimax.selectedProperty().addListener((observable, oldValue, isSelected) -> {
-            if (isSelected) {
-                four.setDisable(true);
-                five.setDisable(true);
-                three.setSelected(true);
-            } else {
-                four.setDisable(false);
-                five.setDisable(false);
-            }
-        });
+//        four.setDisable(true);
+//        five.setDisable(true);
+//        minimax.selectedProperty().addListener((observable, oldValue, isSelected) -> {
+//            if (isSelected) {
+//                four.setDisable(true);
+//                five.setDisable(true);
+//                three.setSelected(true);
+//            } else {
+//                four.setDisable(false);
+//                five.setDisable(false);
+//            }
+//        });
 
         BooleanProperty disablePlayer = new SimpleBooleanProperty(false);
         disablePlayer.bind(hvh_button.selectedProperty().or(bvb_button.selectedProperty()));
@@ -121,12 +121,12 @@ public class StartController {
         }
 
         int s;
-        if (board_size_button.equals(three)) {
-            s = 3;
-        } else if (board_size_button.equals(four)) {
-            s = 4;
+        if (board_size_button.equals(six)) {
+            s = 6;
+        } else if (board_size_button.equals(eight)) {
+            s = 8;
         } else {
-            s = 5;
+            s = 10;
         }
 
         String bot;

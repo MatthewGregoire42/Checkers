@@ -35,6 +35,10 @@ public class Square {
     }
 
     public Square copy() {
-        return new Square(contents.copy(), x, y);
+        if (contents == null) {
+            return new Square(null, x, y);
+        } else {
+            return new Square(contents.copy(), x, y);
+        }
     }
 }

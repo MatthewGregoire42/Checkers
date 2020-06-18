@@ -112,103 +112,44 @@ public class Board {
         return out;
     }
 
-    // TODO: implement
-    public List<Move> getLegalMovesFor(Square square) {
-        if (square.getContents() == null) {
-            return null;
+    // Assuming that the given player is on the given square, return all
+    // legal moves for that particular piece.
+    public List<Move> getLegalMovesFor(Square square, Player player, Piece.Type type, Move chained) {
+        if (square == null || player == null) {
+            throw new IllegalArgumentException("Invalid arguments.");
         }
-        List<Move> legalMoves = new ArrayList<Move>();
+        List<Move> legalMoves = new ArrayList<>();
 
-        // Find all legal, non-capture moves
         List<Square> neighbors = getNeighbors(square);
-        for (Square n: neighbors) {
-            Move m = new Move(square, n);
-            if (isLegalMove(m)) {
-                legalMoves.add(m);
-            }
-        }
-        legalMoves.addAll(getLegalCaptureMovesFor(square));
-
-        return legalMoves;
-    }
-
-    private List<Move> getLegalCaptureMovesFor(Square square) {
-        if (square.getContents() == null) { return null; }
-
-        List<Move> legalCaptureMoves = new ArrayList<>();
-        List<Square> neighbors = getNeighbors(square);
-
-        for (Square n: neighbors) {
-            if (n.getContents() != null && n.getContents().getPlayer() != square.getContents().getPlayer()) {
-                int dx = n.getX() - square.getX();
-                int dy = n.getY() - square.getY();
-                Square destination = getSquare(square.getX() + 2 * dx, square.getY() + 2 * dy);
-
-                List<Square> captures = new ArrayList<>();
-                captures.add(n);
-                Move m = new Move(square, destination, captures);
-                if (isLegalMove(m)) {
-
-                    // Add the capture to legal moves.
-                    legalCaptureMoves.add(m);
-
-                    // Look for chains of captures.
-                    Board possible = this.copy();
-                    possible.applyMove(m);
-
-                    List<Move> futures = possible.getLegalCaptureMovesFor(destination);
-                    legalCaptureMoves.addAll(m.followedByAll(futures));
+        for (Square n : neighbors) {
+            boolean correctDirection = type == Piece.Type.KING || (type == Piece.Type.MAN &&
+                    ((player == Player.RED && (n.getY() - square.getY() < 0)) ||
+                    player == Player.WHITE && (n.getY() - square.getY() > 0)));
+            Piece other = n.getContents();
+            if (correctDirection) {
+                // Legal simple move?
+                if (other == null && chained == null) {
+                    legalMoves.add(new Move(square, n));
+                // Legal capture move?
+                } else if (other != null && other.getPlayer() != player) {
+                    int dx = n.getX() - square.getX();
+                    int dy = n.getY() - square.getY();
+                    Square dest = getSquare(square.getX() + 2*dx, square.getY() + 2*dy);
+                    if (dest != null && dest.getContents() == null) {
+                        // If this is the first jump in a chain, it's just a normal capture.
+                        // Also make sure you're not capturing the same piece twice.
+                        if (chained == null || !chained.getCaptures().contains(n)) {
+                            Move capture = new Move(square, dest, n);
+                            legalMoves.add(capture);
+                            // Search for chained captures.
+                            List<Move> chains = getLegalMovesFor(dest, player, type, capture);
+                            legalMoves.addAll(capture.followedByAll(chains));
+                        }
+                    }
                 }
             }
         }
-        return legalCaptureMoves;
-    }
-
-    public boolean isLegalMove(Move m) {
-        Square source = m.getOrigin();
-        if (source == null) {
-            return false;
-        }
-
-        Square dest = m.getDestination();
-        if (dest == null || !isOnGrid(dest.getX(), dest.getY())) {
-            return false;
-        }
-
-        Piece p = source.getContents();
-        if ( p == null) {
-            return false;
-        }
-
-        boolean correctDirectionRed = p.getPlayer() == Player.RED &&
-                source.getY() - dest.getY() > 0;
-        boolean correctDirectionWhite = p.getPlayer() == Player.WHITE &&
-                source.getY() - dest.getY() < 0;
-
-        // Legal simple move?
-        if (!m.isCapture()) {
-            if (p.getType() == Piece.Type.KING) {
-                return Math.abs(source.getX() - dest.getX()) == 1 &&
-                        Math.abs(source.getY() - dest.getY()) == 1;
-            } else {
-                return correctDirectionRed || correctDirectionWhite;
-            }
-        }
-
-        // Legal capture move?
-
-        boolean isMan = p.getType() == Piece.Type.MAN;
-        boolean isKing = p.getType() == Piece.Type.KING;
-        for (Square hopped : m.getCaptures()) {
-            Piece capture = hopped.getContents();
-            boolean correctColor =
-                    (p.getPlayer() == Player.RED && capture.getPlayer() == Player.WHITE) ||
-                            (p.getPlayer() == Player.WHITE && capture.getPlayer() == Player.RED);
-            if (!(((isMan && (correctDirectionRed || correctDirectionWhite)) || isKing) && correctColor)) {
-                return false;
-            }
-        }
-        return true;
+        return legalMoves;
     }
 
     public void applyMove(Move m) {
@@ -224,6 +165,7 @@ public class Board {
             } else {
                 redPieceSquares.remove(c);
             }
+            c.setContents(null);
         }
 
         if (turn == Player.RED) {
@@ -272,14 +214,14 @@ public class Board {
         }
         if (turn == Player.RED) {
             for (Square s : redPieceSquares) {
-                if (getLegalMovesFor(s).size() != 0) {
+                if (getLegalMovesFor(s, Player.RED, s.getContents().getType(), null).size() != 0) {
                     return false;
                 }
             }
             return true;
         } else {
             for (Square s : whitePieceSquares) {
-                if (getLegalMovesFor(s).size() != 0) {
+                if (getLegalMovesFor(s, Player.WHITE, s.getContents().getType(), null).size() != 0) {
                     return false;
                 }
             }
@@ -312,6 +254,25 @@ public class Board {
         copiedIdentities.put(Player.WHITE, identities.get(Player.WHITE));
 
         return new Board(copiedBoard, turn, copiedIdentities, copiedRedPieceSquares, copiedWhitePieceSquares);
+    }
+
+    public void printBoard() {
+        System.out.println("--------------------");
+        for (int i = 0; i < size; i++) {
+            String line = "";
+            for (int j = 0; j < size; j++) {
+                Square s = getSquare(j, i);
+                if (s.getContents() == null) {
+                    line += "  ";
+                } else if (s.getContents().getPlayer() == Player.RED) {
+                    line += "XX";
+                } else {
+                    line += "OO";
+                }
+            }
+            System.out.println(line);
+        }
+        System.out.println("--------------------");
     }
 
 }

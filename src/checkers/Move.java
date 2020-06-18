@@ -27,6 +27,13 @@ public class Move {
         this.captures = captures;
     }
 
+    public Move(Square origin, Square destination, Square capture) {
+        this.origin = origin;
+        this.destination = destination;
+        this.captures = new ArrayList<>();
+        captures.add(capture);
+    }
+
     public Move followedBy(Move next) {
         if (!this.destination.equals(next.origin)) {
             throw new IllegalArgumentException("Unallowed sequence of moves");

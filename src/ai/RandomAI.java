@@ -21,7 +21,7 @@ public class RandomAI implements Agent {
         List<Square> squares = board.getPieces(board.getTurn());
         List<Move> legalMoves = new ArrayList<>();
         for (Square s : squares) {
-            legalMoves.addAll(board.getLegalMovesFor(s));
+            legalMoves.addAll(board.getLegalMovesFor(s, board.getTurn(), s.getContents().getType(), null));
         }
         return legalMoves.get(random.nextInt(legalMoves.size()-1));
     }

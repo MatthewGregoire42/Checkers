@@ -80,17 +80,20 @@ public class PlayController {
 
         // How to handle human moves.
         canvas.setOnMouseClicked(e -> {
-            System.out.println(gameboard.whoHasTheTurn());
             if (gameboard.whoHasTheTurn().equals(AgentType.HUMAN)) {
                 int x = (int) (e.getX() / (X_DIM/gameboard.getSize()));
                 int y = (int) (e.getY() / (Y_DIM/gameboard.getSize()));
                 Square square = gameboard.getSquare(x, y);
                 // If it's the first click of a move, show the available options.
-                if (clickCount % 2 == 0) {
-                    currentLegals = gameboard.getLegalMovesFor(square);
+                if (clickCount % 2 == 0 && square.getContents() != null) {
+                    currentLegals = gameboard.getLegalMovesFor(
+                            square, gameboard.getTurn(), square.getContents().getType(), null);
                     for (Move m : currentLegals) {
                         Square dest = m.getDestination();
                         drawPotential(dest);
+                    }
+                    if (currentLegals.size() == 0) {
+                        clickCount++;
                     }
                 } else {
                     for (Move m : currentLegals) {
@@ -98,6 +101,7 @@ public class PlayController {
                         if (dest.getX() == x && dest.getY() == y) {
                             drawMove(m, gameboard.getTurn());
                             gameboard.applyMove(m);
+                            gameboard.printBoard();
                             clickCount++;
                             return;
                         }
@@ -106,8 +110,8 @@ public class PlayController {
                         Square dest = m.getDestination();
                         drawSquare(dest.getX(), dest.getY());
                     }
-                    clickCount++;
                 }
+                clickCount++;
             }
         });
 
@@ -121,18 +125,18 @@ public class PlayController {
     // and applies it to the board. Then check if we
     // need to handle a bot move or the end of the game.
     // Called when the screen is clicked.
-    private void humanMove(Move move) {
-        if (gameboard.isLegalMove(move)) {
-            drawMove(move, gameboard.getTurn());
-            gameboard.applyMove(move);
-            // Handle the next move, if it's a bot move.
-            if (gameboard.isOver()) {
-                transitionToFinish();
-            } else {
-                botMove();
-            }
-        }
-    }
+//    private void humanMove(Move move) {
+//        if (gameboard.isLegalMove(move)) {
+//            drawMove(move, gameboard.getTurn());
+//            gameboard.applyMove(move);
+//            // Handle the next move, if it's a bot move.
+//            if (gameboard.isOver()) {
+//                transitionToFinish();
+//            } else {
+//                botMove();
+//            }
+//        }
+//    }
 
     // Applies a bot move, if necessary.
     private void botMove() {
@@ -160,22 +164,27 @@ public class PlayController {
                 drawSquare(j, i);
                 Piece p = gameboard.getSquare(j, i).getContents();
                 if (p != null) {
-                    drawPiece(gameboard.getSquare(j,i), p.getPlayer());
+                    drawPiece(gameboard.getSquare(j,i), p.getPlayer(), p.getType());
                 }
             }
         }
     }
 
-    // TODO: implement
+    // The move must be drawn *before* the move is carried out.
     private void drawMove(Move move, Player player) {
+        // erase the piece from the origin square, all captures, and the shown conditional moves.
         drawSquare(move.getOrigin().getX(), move.getOrigin().getY());
-        drawPiece(move.getDestination(), move.getDestination().getContents().getPlayer());
         for (Square c : move.getCaptures()) {
             drawSquare(c.getX(), c.getY());
         }
+        for (Move m : currentLegals) {
+            drawSquare(m.getDestination().getX(), m.getDestination().getY());
+        }
+        Piece p = move.getOrigin().getContents();
+        drawPiece(move.getDestination(), p.getPlayer(), p.getType());
     }
 
-    private void drawPiece(Square square, Player player) {
+    private void drawPiece(Square square, Player player, Piece.Type type) {
         if (player == Player.RED) {
             gc.setFill(Color.web("#cc0000"));
         } else {
@@ -187,7 +196,7 @@ public class PlayController {
         int squareLength = X_DIM/s;
         gc.fillOval(x*squareLength + (squareLength/9), y*squareLength + (squareLength/9),
                 7*squareLength/9, 7*squareLength/9);
-        if (square.getContents().getType() == Piece.Type.KING) {
+        if (type == Piece.Type.KING) {
             gc.drawImage(new Image("resources/crown.png"),
                     x*squareLength + (squareLength/5), y*squareLength + (squareLength/5),
                     3*squareLength/5, 3*squareLength/5);

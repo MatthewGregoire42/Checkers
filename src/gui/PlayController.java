@@ -1,5 +1,8 @@
 package gui;
 
+import ai.Agent;
+import ai.RandomAI;
+import checkers.Move;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -29,6 +32,7 @@ public class PlayController {
     private AgentType player_white;
     private Board gameboard;
     private BotMoveService moveHandler;
+    private int clickCount;
 
     // Sets who is playing: HvH, HvB, or BvB, and the human's player.
     // Then starts the game.
@@ -40,6 +44,7 @@ public class PlayController {
         player_red = red;
         player_white = white;
         this.botType = botType;
+        clickCount = 0;
 
         gameboard = new Board(s);
         gameboard.setPlayer(Player.RED, player_red);
@@ -52,33 +57,29 @@ public class PlayController {
         gc.setLineWidth(5);
         drawBoard();
 
-//        Agent bot;
-//        if (botType.equals("random")) {
-//            bot = new RandomAI();
-//        } else {
-//            bot = new MinimaxAI();
-//        }
+        Agent bot = new RandomAI();
 
         // How to handle bot moves.
-//        moveHandler = new BotMoveService(gameboard, bot);
-//        moveHandler.setOnSucceeded( e -> {
-//            int[] move = moveHandler.getValue();
-//            drawMarker(move[0], move[1], gameboard.getTurn());
-//            gameboard.applyMove(move[0], move[1]);
-//
-//            if (gameboard.isOver()) {
-//                transitionToFinish();
-//            } else {
-//                botMove();
-//            }
-//        });
+        moveHandler = new BotMoveService(gameboard, bot);
+        moveHandler.setOnSucceeded( e -> {
+            Move move = moveHandler.getValue();
+            drawMove(move, gameboard.getTurn());
+            gameboard.applyMove(move);
+
+            if (gameboard.isOver()) {
+                transitionToFinish();
+            } else {
+                botMove();
+            }
+        });
 
         // How to handle human moves.
         canvas.setOnMouseClicked(e -> {
             if (gameboard.whoHasTheTurn().equals(AgentType.HUMAN)) {
                 int x = (int) (e.getX() / (X_DIM/gameboard.getSize()));
                 int y = (int) (e.getY() / (Y_DIM/gameboard.getSize()));
-                humanMove(x, y);
+                Move move = null;
+                humanMove(move);
             }
         });
 
@@ -92,17 +93,17 @@ public class PlayController {
     // and applies it to the board. Then check if we
     // need to handle a bot move or the end of the game.
     // Called when the screen is clicked.
-    private void humanMove(int x, int y) {
-//        if (gameboard.isLegalMove(x,y)) {
-//            drawMarker(x, y, gameboard.getTurn());
-//            gameboard.applyMove(x,y);
-//            // Handle the next move, if it's a bot move.
-//            if (gameboard.isOver()) {
-//                transitionToFinish();
-//            } else {
-//                botMove();
-//            }
-//        }
+    private void humanMove(Move move) {
+        if (gameboard.isLegalMove(move)) {
+            drawMove(move, gameboard.getTurn());
+            gameboard.applyMove(move);
+            // Handle the next move, if it's a bot move.
+            if (gameboard.isOver()) {
+                transitionToFinish();
+            } else {
+                botMove();
+            }
+        }
     }
 
     // Applies a bot move, if necessary.
@@ -119,7 +120,7 @@ public class PlayController {
     }
 
     // TODO: implement
-    private void drawMarker(int x, int y, Player player) {
+    private void drawMove(Move move, Player player) {
         int s = gameboard.getSize();
     }
 

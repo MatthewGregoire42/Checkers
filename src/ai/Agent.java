@@ -1,7 +1,8 @@
 package ai;
 
 import checkers.Board;
+import checkers.Move;
 
 public interface Agent {
-    int[] chooseMove(Board board);
+    Move chooseMove(Board board);
 }

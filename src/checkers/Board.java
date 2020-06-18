@@ -113,16 +113,14 @@ public class Board {
         if (square.getContents() == null) {
             return null;
         }
-
-        Piece piece = square.getContents();
         List<Move> legalMoves = new ArrayList<Move>();
 
         // Find all legal, non-capture moves
         List<Square> neighbors = getNeighbors(square);
         for (Square n: neighbors) {
-            // TODO: update to add movement restrictions
-            if (n.getContents() == null) {
-                legalMoves.add(new Move(square, n));
+            Move m = new Move(square, n);
+            if (isLegalMove(m)) {
+                legalMoves.add(m);
             }
         }
         legalMoves.addAll(getLegalCaptureMovesFor(square));
@@ -131,51 +129,80 @@ public class Board {
     }
 
     private List<Move> getLegalCaptureMovesFor(Square square) {
-        if (square.getContents() == null) {
-            return null;
-        }
+        if (square.getContents() == null) { return null; }
 
-        Piece piece = square.getContents();
         List<Move> legalCaptureMoves = new ArrayList<>();
-
         List<Square> neighbors = getNeighbors(square);
+
         for (Square n: neighbors) {
-            Piece nPiece = n.getContents();
             int dx = n.getX() - square.getX();
             int dy = n.getY() - square.getY();
             Square destination = getSquare(square.getX() + 2 * dx, square.getY() + 2 * dy);
-            if (destination != null) {
-                boolean isMan = piece.getType() == Piece.Type.MAN;
-                boolean correctDirectionRed = piece.getPlayer() == Player.RED &&
-                        square.getY() - n.getY() < 0;
-                boolean correctDirectionWhite = piece.getPlayer() == Player.WHITE &&
-                        square.getY() - n.getY() > 0;
-                boolean isKing = piece.getType() == Piece.Type.KING;
-                boolean correctColor =
-                        (piece.getPlayer() == Player.RED && nPiece.getPlayer() == Player.WHITE) ||
-                                (piece.getPlayer() == Player.WHITE && nPiece.getPlayer() == Player.RED);
-                if (((isMan && (correctDirectionRed || correctDirectionWhite)) || isKing) && correctColor) {
-                    // Add the capture to legal moves.
-                    List<Square> captures = new ArrayList<>();
-                    captures.add(n);
-                    Move m = new Move(square, destination, captures);
-                    legalCaptureMoves.add(m);
 
-                    // Look for chains of captures.
-                    Board possible = this.copy();
-                    possible.applyMove(m);
+            List<Square> captures = new ArrayList<>();
+            captures.add(n);
+            Move m = new Move(square, destination, captures);
+            if (isLegalMove(m)) {
 
-                    List<Move> futures = possible.getLegalCaptureMovesFor(destination);
-                    legalCaptureMoves.addAll(m.followedByAll(futures));
+                // Add the capture to legal moves.
+                legalCaptureMoves.add(m);
 
-                }
+                // Look for chains of captures.
+                Board possible = this.copy();
+                possible.applyMove(m);
+
+                List<Move> futures = possible.getLegalCaptureMovesFor(destination);
+                legalCaptureMoves.addAll(m.followedByAll(futures));
             }
         }
         return legalCaptureMoves;
     }
 
     public boolean isLegalMove(Move m) {
-        return getLegalMovesFor(m.getOrigin()).contains(m);
+        Square source = m.getOrigin();
+        if (source == null) {
+            return false;
+        }
+
+        Square dest = m.getDestination();
+        if (dest == null || !isOnGrid(dest.getX(), dest.getY())) {
+            return false;
+        }
+
+        Piece p = source.getContents();
+        if ( p == null) {
+            return false;
+        }
+
+        boolean correctDirectionRed = p.getPlayer() == Player.RED &&
+                source.getY() - dest.getY() < 0;
+        boolean correctDirectionWhite = p.getPlayer() == Player.WHITE &&
+                source.getY() - dest.getY() > 0;
+
+        // Legal simple move?
+        if (!m.isCapture()) {
+            if (p.getType() == Piece.Type.KING) {
+                return Math.abs(source.getX() - dest.getX()) == 1 &&
+                        Math.abs(source.getY() - dest.getY()) == 1;
+            } else {
+                return correctDirectionRed || correctDirectionWhite;
+            }
+        }
+
+        // Legal capture move?
+
+        boolean isMan = p.getType() == Piece.Type.MAN;
+        boolean isKing = p.getType() == Piece.Type.KING;
+        for (Square hopped : m.getCaptures()) {
+            Piece capture = hopped.getContents();
+            boolean correctColor =
+                    (p.getPlayer() == Player.RED && capture.getPlayer() == Player.WHITE) ||
+                            (p.getPlayer() == Player.WHITE && capture.getPlayer() == Player.RED);
+            if (!(((isMan && (correctDirectionRed || correctDirectionWhite)) || isKing) && correctColor)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void applyMove(Move m) {
@@ -197,6 +224,60 @@ public class Board {
             turn = Player.WHITE;
         } else {
             turn = Player.RED;
+        }
+    }
+
+    public void setPlayer(Player player, AgentType agentType) {
+        identities.put(player, agentType);
+    }
+
+    public AgentType whoHasTheTurn() {
+        return identities.get(turn);
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public Player getTurn() {
+        return turn;
+    }
+
+    public List<Square> getPieces(Player player) {
+        if (player == Player.RED) {
+            return redPieceSquares;
+        } else {
+            return whitePieceSquares;
+        }
+    }
+
+    public Player findWinner() {
+        if (redPieceSquares.size() == 0) {
+            return Player.WHITE;
+        } else if (whitePieceSquares.size() == 0) {
+            return Player.RED;
+        }
+        return null;
+    }
+
+    public boolean isOver() {
+        if (findWinner() != null) {
+            return true;
+        }
+        if (turn == Player.RED) {
+            for (Square s : redPieceSquares) {
+                if (getLegalMovesFor(s).size() != 0) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            for (Square s : whitePieceSquares) {
+                if (getLegalMovesFor(s).size() != 0) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 

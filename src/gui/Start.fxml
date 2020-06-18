@@ -17,25 +17,22 @@
         <style>-fx-font: 34 system;</style>
     </Label>
     <HBox spacing="20" alignment="CENTER">
-        <Label text="Grid size:" style="-fx-highlight-text-fill: #fff;"/>
-        <RadioButton text="6" toggleGroup="$board_size" fx:id="six"/>
-        <RadioButton text="8" toggleGroup="$board_size" fx:id="eight"/>
-        <RadioButton text="10" toggleGroup="$board_size" fx:id="ten"/>
+        <Label text="Grid size:"/>
+        <RadioButton text="6" toggleGroup="$boardSize" fx:id="six"/>
+        <RadioButton text="8" toggleGroup="$boardSize" fx:id="eight"/>
+        <RadioButton text="10" toggleGroup="$boardSize" fx:id="ten"/>
     </HBox>
     <HBox spacing="20" alignment="CENTER">
-        <Label text="Which bot?"/>
-        <RadioButton text="Random AI" toggleGroup="$whichBot" fx:id="random"/>
-        <RadioButton text="Alpha-Beta AI" toggleGroup="$whichBot" fx:id="minimax"/>
-    </HBox>
-    <HBox spacing="20" alignment="CENTER">
-        <RadioButton text="Human vs. Human" toggleGroup="$who" fx:id="hvh_button"/>
-        <RadioButton text="Human vs. Bot" toggleGroup="$who" fx:id="hvb_button"/>
-        <RadioButton text="Bot vs. Bot" toggleGroup="$who" fx:id="bvb_button"/>
-    </HBox>
-    <HBox spacing="20" alignment="CENTER">
-        <Label text="Player?"/>
-        <RadioButton text="X" toggleGroup="$player" fx:id="red_button"/>
-        <RadioButton text="O" toggleGroup="$player" fx:id="white_button"/>
+        <VBox spacing="20" alignment="CENTER">
+            <Label text="Player 1:"/>
+            <RadioButton text="Human" toggleGroup="$playerOne" fx:id="humanOne"/>
+            <RadioButton text="Random AI" toggleGroup="$playerOne" fx:id="randomOne"/>
+        </VBox>
+        <VBox spacing="20" alignment="CENTER">
+            <Label text="Player 2:"/>
+            <RadioButton text="Human" toggleGroup="$playerTwo" fx:id="humanTwo"/>
+            <RadioButton text="Random AI" toggleGroup="$playerTwo" fx:id="randomTwo"/>
+        </VBox>
     </HBox>
     <Button text="Play!" onAction="#pressPlay" alignment="CENTER"/>
     <Button text="About" onAction="#pressAbout" alignment="CENTER"/>

@@ -119,6 +119,10 @@ public class Board {
             throw new IllegalArgumentException("Invalid arguments.");
         }
         List<Move> legalMoves = new ArrayList<>();
+        // Make sure that this piece is allowed to move.
+        if (chained == null && square.getContents().getPlayer() != turn) {
+            return legalMoves;
+        }
 
         List<Square> neighbors = getNeighbors(square);
         for (Square n : neighbors) {
@@ -155,10 +159,22 @@ public class Board {
     public void applyMove(Move m) {
         Square source = m.getOrigin();
         Square dest = m.getDestination();
+        Piece piece = source.getContents();
         List<Square> captures = m.getCaptures();
 
-        dest.setContents(source.getContents());
+        // Move the piece.
+        dest.setContents(piece);
         source.setContents(null);
+        // Update the piece square lists.
+        if (piece.getPlayer() == Player.RED) {
+            redPieceSquares.remove(source);
+            redPieceSquares.add(dest);
+        } else {
+            whitePieceSquares.remove(source);
+            whitePieceSquares.add(dest);
+        }
+
+        // Remove all captures.
         for (Square c : captures) {
             if (c.getContents().getPlayer() == Player.WHITE) {
                 whitePieceSquares.remove(c);
@@ -167,7 +183,15 @@ public class Board {
             }
             c.setContents(null);
         }
+        // King pieces if necessary
+        boolean kingMe = piece.getType() == Piece.Type.MAN &&
+                ((piece.getPlayer() == Player.RED && dest.getY() == 0) ||
+                (piece.getPlayer() == Player.WHITE && dest.getY() == size - 1));
+        if (kingMe) {
+            piece.kingMe();
+        }
 
+        // Progress to the next turn.
         if (turn == Player.RED) {
             turn = Player.WHITE;
         } else {
@@ -205,28 +229,25 @@ public class Board {
         } else if (whitePieceSquares.size() == 0) {
             return Player.RED;
         }
-        return null;
-    }
-
-    public boolean isOver() {
-        if (findWinner() != null) {
-            return true;
-        }
         if (turn == Player.RED) {
             for (Square s : redPieceSquares) {
                 if (getLegalMovesFor(s, Player.RED, s.getContents().getType(), null).size() != 0) {
-                    return false;
+                    return null;
                 }
             }
-            return true;
+            return Player.WHITE;
         } else {
             for (Square s : whitePieceSquares) {
                 if (getLegalMovesFor(s, Player.WHITE, s.getContents().getType(), null).size() != 0) {
-                    return false;
+                    return null;
                 }
             }
-            return true;
+            return Player.RED;
         }
+    }
+
+    public boolean isOver() {
+        return findWinner() != null;
     }
 
     public Board copy() {
@@ -265,9 +286,17 @@ public class Board {
                 if (s.getContents() == null) {
                     line += "  ";
                 } else if (s.getContents().getPlayer() == Player.RED) {
-                    line += "XX";
+                    if (s.getContents().getType() == Piece.Type.MAN) {
+                        line += "XX";
+                    } else {
+                        line += "XK";
+                    }
                 } else {
-                    line += "OO";
+                    if (s.getContents().getType() == Piece.Type.MAN) {
+                        line += "OO";
+                    } else {
+                        line += "OK";
+                    }
                 }
             }
             System.out.println(line);

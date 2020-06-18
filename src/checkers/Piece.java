@@ -34,4 +34,8 @@ public class Piece {
         return new Piece(type, player);
     }
 
+    public void kingMe() {
+        type = Type.KING;
+    }
+
 }

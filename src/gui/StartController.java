@@ -16,125 +16,73 @@ import checkers.Board.*;
 
 public class StartController {
 
-    @FXML private ToggleGroup who = new ToggleGroup();
-    @FXML private RadioButton hvh_button = new RadioButton();
-    @FXML private RadioButton hvb_button = new RadioButton();
-    @FXML private RadioButton bvb_button = new RadioButton();
-
-    @FXML private ToggleGroup player = new ToggleGroup();
-    @FXML private RadioButton red_button = new RadioButton();
-    @FXML private RadioButton white_button = new RadioButton();
-
-    @FXML private ToggleGroup board_size = new ToggleGroup();
+    @FXML private ToggleGroup boardSize = new ToggleGroup();
     @FXML private RadioButton six = new RadioButton();
     @FXML private RadioButton eight = new RadioButton();
     @FXML private RadioButton ten = new RadioButton();
 
-    @FXML private ToggleGroup whichBot = new ToggleGroup();
-    @FXML private RadioButton random = new RadioButton();
-    @FXML private RadioButton minimax = new RadioButton();
+    @FXML private ToggleGroup playerOne = new ToggleGroup();
+    @FXML private RadioButton humanOne = new RadioButton();
+    @FXML private RadioButton randomOne = new RadioButton();
 
-    private AgentType player_red;
-    private AgentType player_white;
+    @FXML private ToggleGroup playerTwo = new ToggleGroup();
+    @FXML private RadioButton humanTwo = new RadioButton();
+    @FXML private RadioButton randomTwo = new RadioButton();
+
+    private AgentType playerRed;
+    private AgentType playerWhite;
 
     @FXML private void initialize() {
 
-        RadioButton[] buttons = {hvh_button, hvb_button, bvb_button, red_button, white_button,
-        six, eight, ten, random, minimax};
+        RadioButton[] buttons = {humanOne, randomOne, humanTwo, randomTwo,
+        six, eight, ten};
 
         for (RadioButton button : buttons) {
             button.getStyleClass().remove("radio-button");
             button.getStyleClass().add("toggle-button");
         }
 
-        hvh_button.setToggleGroup(who);
-        hvb_button.setToggleGroup(who);
-        bvb_button.setToggleGroup(who);
+        humanOne.setToggleGroup(playerOne);
+        randomOne.setToggleGroup(playerOne);
+        playerOne.selectToggle(humanOne);
 
-        red_button.setToggleGroup(player);
-        white_button.setToggleGroup(player);
+        humanTwo.setToggleGroup(playerTwo);
+        randomTwo.setToggleGroup(playerTwo);
+        playerTwo.selectToggle(randomTwo);
 
-        six.setToggleGroup(board_size);
-        eight.setToggleGroup(board_size);
-        ten.setToggleGroup(board_size);
-
-        random.setToggleGroup(whichBot);
-        minimax.setToggleGroup(whichBot);
-
-        who.selectToggle(hvb_button);
-        player.selectToggle(red_button);
-        board_size.selectToggle(eight);
-        whichBot.selectToggle(minimax);
-
-        BooleanProperty disableLarge = new SimpleBooleanProperty(false);
-        disableLarge.bind(minimax.selectedProperty().and(
-                hvb_button.selectedProperty().or(bvb_button.selectedProperty())));
-
-        // Only allow 3x3 for minimax. But we also want to allow 3x3 when minimax
-        // is not selected, so we add a listener instead of using a direct binding.
-//        four.setDisable(true);
-//        five.setDisable(true);
-//        minimax.selectedProperty().addListener((observable, oldValue, isSelected) -> {
-//            if (isSelected) {
-//                four.setDisable(true);
-//                five.setDisable(true);
-//                three.setSelected(true);
-//            } else {
-//                four.setDisable(false);
-//                five.setDisable(false);
-//            }
-//        });
-
-        BooleanProperty disablePlayer = new SimpleBooleanProperty(false);
-        disablePlayer.bind(hvh_button.selectedProperty().or(bvb_button.selectedProperty()));
-
-        // The Player button isn't relevant when the user isn't doing human vs. bot.
-        red_button.disableProperty().bind(disablePlayer);
-        white_button.disableProperty().bind(disablePlayer);
-
-        // The Bot button isn't relevant when the user selects human vs. human.
-        random.disableProperty().bind(hvh_button.selectedProperty());
-        minimax.disableProperty().bind(hvh_button.selectedProperty());
+        six.setToggleGroup(boardSize);
+        eight.setToggleGroup(boardSize);
+        ten.setToggleGroup(boardSize);
+        boardSize.selectToggle(eight);
     }
 
     // What to do when the user presses the "play" button.
     @FXML private void pressPlay(ActionEvent e) throws Exception {
-        RadioButton who_is_button = (RadioButton) who.getSelectedToggle();
-        RadioButton player_is_button = (RadioButton) player.getSelectedToggle();
-        RadioButton board_size_button = (RadioButton) board_size.getSelectedToggle();
-        RadioButton bot_button = (RadioButton) whichBot.getSelectedToggle();
+        RadioButton redButton = (RadioButton) playerOne.getSelectedToggle();
+        RadioButton whiteButton = (RadioButton) playerTwo.getSelectedToggle();
+        RadioButton boardSizeButton = (RadioButton) boardSize.getSelectedToggle();
 
-        if (who_is_button.equals(hvh_button)) {
-            player_red = AgentType.HUMAN;
-            player_white = AgentType.HUMAN;
-        } else if (who_is_button.equals(hvb_button)) {
-            if (player_is_button.equals(red_button)) {
-                player_red = AgentType.HUMAN;
-                player_white = AgentType.BOT;
-            } else {
-                player_red = AgentType.BOT;
-                player_white = AgentType.HUMAN;
-            }
+        if (redButton.equals(humanOne)) {
+            playerRed = AgentType.HUMAN;
         } else {
-            player_red = AgentType.BOT;
-            player_white = AgentType.BOT;
+            playerRed = AgentType.BOT;
+        }
+        if (whiteButton.equals(humanTwo)) {
+            playerWhite = AgentType.HUMAN;
+        } else {
+            playerWhite = AgentType.BOT;
         }
 
         int s;
-        if (board_size_button.equals(six)) {
+        if (boardSizeButton.equals(six)) {
             s = 6;
-        } else if (board_size_button.equals(eight)) {
+        } else if (boardSizeButton.equals(eight)) {
             s = 8;
         } else {
             s = 10;
         }
 
-        String bot;
-        if (bot_button.equals(random)) {
-            bot = "random";
-        } else {
-            bot = "minimax";
-        }
+        String bot = "random";
 
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getResource("Play.fxml"));
@@ -146,7 +94,7 @@ public class StartController {
         Stage window = (Stage) ((Node) e.getSource()).getScene().getWindow();
         window.setScene(playScene);
 
-        playController.setOptions(player_red, player_white, s, bot);
+        playController.setOptions(playerRed, playerWhite, s, bot);
     }
 
     // Switch to "About" scene when the user presses the "About" button.

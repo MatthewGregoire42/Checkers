@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import checkers.Board.*;
@@ -17,6 +18,7 @@ public class FinishController {
 
     @FXML private Label label;
     @FXML private ImageView imgView;
+    @FXML private VBox vbox;
 
     private AgentType player_X;
     private AgentType player_O;
@@ -26,12 +28,19 @@ public class FinishController {
     // The Finish screen needs to know who won and the final board state to set as
     // the background. It also needs to know who played as X and O and what size the
     // board was, in case the user wants to play again with the same settings.
-    public void setOptions(Player won, Image image, AgentType x, AgentType o, int size, String botType) {
+    public void setOptions(Player won, Image image, AgentType x, AgentType o, int size,
+                           String botType, boolean humanWon) {
 
         player_X = x;
         player_O = o;
         s = size;
         bot = botType;
+
+        if (humanWon) {
+            vbox.setStyle("-fx-background-color: rgba(200, 255, 200, 0.8); -fx-font: 24 system;");
+        } else {
+            vbox.setStyle("-fx-background-color: rgba(255, 175, 175, 0.8); -fx-font: 24 system;");
+        }
 
         if (won == null) {
             label.setText("It's a tie!");

@@ -23,7 +23,11 @@ public class RandomAI implements Agent {
         for (Square s : squares) {
             legalMoves.addAll(board.getLegalMovesFor(s, board.getTurn(), s.getContents().getType(), null));
         }
-        return legalMoves.get(random.nextInt(legalMoves.size()-1));
+        if (legalMoves.size() > 1) {
+            return legalMoves.get(random.nextInt(legalMoves.size()-1));
+        } else {
+            return legalMoves.get(0);
+        }
     }
 
 }

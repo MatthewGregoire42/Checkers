@@ -66,16 +66,19 @@ public class PlayController {
 
         // How to handle bot moves.
         moveHandler = new BotMoveService(gameboard, bot);
-        moveHandler.setOnSucceeded( e -> {
+        moveHandler.setOnSucceeded(e -> {
             Move move = moveHandler.getValue();
-            drawMove(move, gameboard.getTurn());
             gameboard.applyMove(move);
+            drawMove(move, gameboard.getTurn());
 
             if (gameboard.isOver()) {
                 transitionToFinish();
             } else {
                 botMove();
             }
+        });
+        moveHandler.setOnFailed(e -> {
+            e.getSource().getException().printStackTrace();
         });
 
         // How to handle human moves.
@@ -95,20 +98,21 @@ public class PlayController {
                     if (currentLegals.size() == 0) {
                         clickCount++;
                     }
+                // Otherwise, apply the selected move.
                 } else {
                     for (Move m : currentLegals) {
                         Square dest = m.getDestination();
-                        if (dest.getX() == x && dest.getY() == y) {
-                            drawMove(m, gameboard.getTurn());
-                            gameboard.applyMove(m);
-                            gameboard.printBoard();
-                            clickCount++;
-                            return;
-                        }
-                    }
-                    for (Move m : currentLegals) {
-                        Square dest = m.getDestination();
                         drawSquare(dest.getX(), dest.getY());
+                        if (dest.getX() == x && dest.getY() == y) {
+                            gameboard.applyMove(m);
+                            drawMove(m, gameboard.getTurn());
+                            // If a bot move comes next and the game isn't over, handle it.
+                            if (gameboard.isOver()) {
+                                transitionToFinish();
+                            } else {
+                                botMove();
+                            }
+                        }
                     }
                 }
                 clickCount++;
@@ -120,23 +124,6 @@ public class PlayController {
             botMove();
         }
     }
-
-    // Takes a human move, draws it on the screen,
-    // and applies it to the board. Then check if we
-    // need to handle a bot move or the end of the game.
-    // Called when the screen is clicked.
-//    private void humanMove(Move move) {
-//        if (gameboard.isLegalMove(move)) {
-//            drawMove(move, gameboard.getTurn());
-//            gameboard.applyMove(move);
-//            // Handle the next move, if it's a bot move.
-//            if (gameboard.isOver()) {
-//                transitionToFinish();
-//            } else {
-//                botMove();
-//            }
-//        }
-//    }
 
     // Applies a bot move, if necessary.
     private void botMove() {
@@ -170,17 +157,14 @@ public class PlayController {
         }
     }
 
-    // The move must be drawn *before* the move is carried out.
+    // The move must be drawn *after* the move is carried out.
     private void drawMove(Move move, Player player) {
         // erase the piece from the origin square, all captures, and the shown conditional moves.
         drawSquare(move.getOrigin().getX(), move.getOrigin().getY());
         for (Square c : move.getCaptures()) {
             drawSquare(c.getX(), c.getY());
         }
-        for (Move m : currentLegals) {
-            drawSquare(m.getDestination().getX(), m.getDestination().getY());
-        }
-        Piece p = move.getOrigin().getContents();
+        Piece p = move.getDestination().getContents();
         drawPiece(move.getDestination(), p.getPlayer(), p.getType());
     }
 
@@ -237,7 +221,12 @@ public class PlayController {
                 FXMLLoader loader = new FXMLLoader();
                 loader.setLocation(getClass().getResource("Finish.fxml"));
 
-                // 2. Let the finish controller know who won the game and what to use as a background.
+                // 2. If a human won the game, make the finish background green.
+                Player winner = gameboard.findWinner();
+                boolean humanWon = (winner == Player.RED && player_red == AgentType.HUMAN) ||
+                        (winner == Player.WHITE && player_white == AgentType.HUMAN);
+
+                // 3. Let the finish controller know who won the game and what to use as a background.
                 Parent finishParent;
                 try {
                     finishParent = loader.load();
@@ -245,10 +234,10 @@ public class PlayController {
                     finishParent = null;
                 }
                 FinishController finishController = loader.getController();
-                finishController.setOptions(gameboard.findWinner(), finalState,
-                        player_red, player_white, gameboard.getSize(), botType);
+                finishController.setOptions(winner, finalState,
+                        player_red, player_white, gameboard.getSize(), botType, humanWon);
 
-                // 3. Display the finish scene in the window.
+                // 4. Display the finish scene in the window.
                 Scene finishScene = new Scene(finishParent);
                 Stage window = (Stage) canvas.getScene().getWindow();
                 window.setScene(finishScene);

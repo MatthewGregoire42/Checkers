@@ -269,12 +269,27 @@ public class Board {
                 }
             }
         }
-
         HashMap<Player, AgentType> copiedIdentities = new HashMap<>();
         copiedIdentities.put(Player.RED, identities.get(Player.RED));
         copiedIdentities.put(Player.WHITE, identities.get(Player.WHITE));
 
         return new Board(copiedBoard, turn, copiedIdentities, copiedRedPieceSquares, copiedWhitePieceSquares);
+    }
+
+    public Move transferMove(Move m) {
+        int origin_x = m.getOrigin().getX();
+        int origin_y = m.getOrigin().getY();
+        Square origin = getSquare(origin_x, origin_y);
+        int dest_x = m.getDestination().getX();
+        int dest_y = m.getDestination().getY();
+        Square destination = getSquare(dest_x, dest_y);
+        List<Square> captures = new ArrayList<>();
+        for (Square c : m.getCaptures()) {
+            int capture_x = c.getX();
+            int capture_y = c.getY();
+            captures.add(getSquare(capture_x, capture_y));
+        }
+        return new Move(origin, destination, captures);
     }
 
     public void printBoard() {

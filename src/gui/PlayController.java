@@ -1,6 +1,7 @@
 package gui;
 
 import ai.Agent;
+import ai.AlphaBetaAI;
 import ai.RandomAI;
 import checkers.Move;
 import checkers.Piece;
@@ -62,7 +63,7 @@ public class PlayController {
         gc.setLineWidth(5);
         drawBoard();
 
-        Agent bot = new RandomAI();
+        Agent bot = new AlphaBetaAI(9);
 
         // How to handle bot moves.
         moveHandler = new BotMoveService(gameboard, bot);

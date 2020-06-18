@@ -28,6 +28,7 @@ public class Board {
         this.whitePieceSquares = new ArrayList<>();
         this.redPieceSquares = new ArrayList<>();
         this.identities = new HashMap<>();
+        this.turn = Player.RED;
 
         // Populate the board with an array of empty squares.
         for (int i = 0; i < size; i++) {
@@ -138,24 +139,26 @@ public class Board {
         List<Square> neighbors = getNeighbors(square);
 
         for (Square n: neighbors) {
-            int dx = n.getX() - square.getX();
-            int dy = n.getY() - square.getY();
-            Square destination = getSquare(square.getX() + 2 * dx, square.getY() + 2 * dy);
+            if (n.getContents() != null && n.getContents().getPlayer() != square.getContents().getPlayer()) {
+                int dx = n.getX() - square.getX();
+                int dy = n.getY() - square.getY();
+                Square destination = getSquare(square.getX() + 2 * dx, square.getY() + 2 * dy);
 
-            List<Square> captures = new ArrayList<>();
-            captures.add(n);
-            Move m = new Move(square, destination, captures);
-            if (isLegalMove(m)) {
+                List<Square> captures = new ArrayList<>();
+                captures.add(n);
+                Move m = new Move(square, destination, captures);
+                if (isLegalMove(m)) {
 
-                // Add the capture to legal moves.
-                legalCaptureMoves.add(m);
+                    // Add the capture to legal moves.
+                    legalCaptureMoves.add(m);
 
-                // Look for chains of captures.
-                Board possible = this.copy();
-                possible.applyMove(m);
+                    // Look for chains of captures.
+                    Board possible = this.copy();
+                    possible.applyMove(m);
 
-                List<Move> futures = possible.getLegalCaptureMovesFor(destination);
-                legalCaptureMoves.addAll(m.followedByAll(futures));
+                    List<Move> futures = possible.getLegalCaptureMovesFor(destination);
+                    legalCaptureMoves.addAll(m.followedByAll(futures));
+                }
             }
         }
         return legalCaptureMoves;
@@ -178,9 +181,9 @@ public class Board {
         }
 
         boolean correctDirectionRed = p.getPlayer() == Player.RED &&
-                source.getY() - dest.getY() < 0;
-        boolean correctDirectionWhite = p.getPlayer() == Player.WHITE &&
                 source.getY() - dest.getY() > 0;
+        boolean correctDirectionWhite = p.getPlayer() == Player.WHITE &&
+                source.getY() - dest.getY() < 0;
 
         // Legal simple move?
         if (!m.isCapture()) {

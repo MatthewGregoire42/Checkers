@@ -25,6 +25,8 @@ import static gui.Main.Y_DIM;
 import checkers.Board;
 import checkers.Board.*;
 
+import java.util.List;
+
 public class PlayController {
 
     @FXML private Canvas canvas;
@@ -35,6 +37,7 @@ public class PlayController {
     private Board gameboard;
     private BotMoveService moveHandler;
     private int clickCount;
+    private List<Move> currentLegals;
 
     // Sets who is playing: HvH, HvB, or BvB, and the human's player.
     // Then starts the game.
@@ -77,11 +80,34 @@ public class PlayController {
 
         // How to handle human moves.
         canvas.setOnMouseClicked(e -> {
+            System.out.println(gameboard.whoHasTheTurn());
             if (gameboard.whoHasTheTurn().equals(AgentType.HUMAN)) {
                 int x = (int) (e.getX() / (X_DIM/gameboard.getSize()));
                 int y = (int) (e.getY() / (Y_DIM/gameboard.getSize()));
-                Move move = null;
-                humanMove(move);
+                Square square = gameboard.getSquare(x, y);
+                // If it's the first click of a move, show the available options.
+                if (clickCount % 2 == 0) {
+                    currentLegals = gameboard.getLegalMovesFor(square);
+                    for (Move m : currentLegals) {
+                        Square dest = m.getDestination();
+                        drawPotential(dest);
+                    }
+                } else {
+                    for (Move m : currentLegals) {
+                        Square dest = m.getDestination();
+                        if (dest.getX() == x && dest.getY() == y) {
+                            drawMove(m, gameboard.getTurn());
+                            gameboard.applyMove(m);
+                            clickCount++;
+                            return;
+                        }
+                    }
+                    for (Move m : currentLegals) {
+                        Square dest = m.getDestination();
+                        drawSquare(dest.getX(), dest.getY());
+                    }
+                    clickCount++;
+                }
             }
         });
 
@@ -116,32 +142,37 @@ public class PlayController {
         }
     }
 
+    private void drawSquare(int x, int y) {
+        if ((x + y) % 2 == 0) {
+            gc.setFill(Color.web("#CAB7A8"));
+        } else {
+            gc.setFill(Color.web("#6A4E4B"));
+        }
+        int squareLength = X_DIM/gameboard.getSize();
+        gc.fillRect(x*squareLength, y*squareLength, squareLength, squareLength);
+    }
+
     // TODO: implement
     private void drawBoard() {
         int s = gameboard.getSize();
-        int squareLength = X_DIM/s;
-        int count = 0;
         for (int i = 0; i < s; i++) {
             for (int j = 0; j < s; j++) {
-                if (count % 2 == 0) {
-                    gc.setFill(Color.web("#CAB7A8"));
-                } else {
-                    gc.setFill(Color.web("#6A4E4B"));
-                }
-                gc.fillRect(j*squareLength, i*squareLength, squareLength, squareLength);
-                count++;
+                drawSquare(j, i);
                 Piece p = gameboard.getSquare(j, i).getContents();
                 if (p != null) {
                     drawPiece(gameboard.getSquare(j,i), p.getPlayer());
                 }
             }
-            count++;
         }
     }
 
     // TODO: implement
     private void drawMove(Move move, Player player) {
-        int s = gameboard.getSize();
+        drawSquare(move.getOrigin().getX(), move.getOrigin().getY());
+        drawPiece(move.getDestination(), move.getDestination().getContents().getPlayer());
+        for (Square c : move.getCaptures()) {
+            drawSquare(c.getX(), c.getY());
+        }
     }
 
     private void drawPiece(Square square, Player player) {
@@ -153,7 +184,23 @@ public class PlayController {
         int x = square.getX();
         int y = square.getY();
         int s = gameboard.getSize();
-        gc.fillOval(x*(X_DIM/s), y*(Y_DIM/s), X_DIM/s, Y_DIM/s);
+        int squareLength = X_DIM/s;
+        gc.fillOval(x*squareLength + (squareLength/9), y*squareLength + (squareLength/9),
+                7*squareLength/9, 7*squareLength/9);
+        if (square.getContents().getType() == Piece.Type.KING) {
+            gc.drawImage(new Image("resources/crown.png"),
+                    x*squareLength + (squareLength/5), y*squareLength + (squareLength/5),
+                    3*squareLength/5, 3*squareLength/5);
+        }
+    }
+
+    private void drawPotential(Square square) {
+        int x = square.getX();
+        int y = square.getY();
+        int squareLength = X_DIM/gameboard.getSize();
+        gc.setFill(Color.web("#33cc33"));
+        gc.fillOval(x*squareLength + (squareLength/3), y*squareLength + (squareLength/3),
+                squareLength/3, squareLength/3);
     }
 
     // Execute this code when the game ends. We need to do the song and dance

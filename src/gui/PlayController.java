@@ -25,6 +25,7 @@ import static gui.Main.X_DIM;
 import static gui.Main.Y_DIM;
 import checkers.Board;
 import checkers.Board.*;
+import ai.AlphaBetaAI.StaticEval;
 
 import java.util.List;
 
@@ -32,13 +33,16 @@ public class PlayController {
 
     @FXML private Canvas canvas;
     private GraphicsContext gc;
-    private String botType;
-    private AgentType player_red;
-    private AgentType player_white;
     private Board gameboard;
-    private BotMoveService moveHandler;
     private int clickCount;
     private List<Move> currentLegals;
+    private BotMoveService redMoveHandler, whiteMoveHandler;
+
+    private AgentType playerRed, playerWhite;
+    private Agent redBot, whiteBot;
+    private String redBotType, whiteBotType;
+    private int depthOne, depthTwo;
+    private StaticEval evalOne, evalTwo;
 
     // Sets who is playing: HvH, HvB, or BvB, and the human's player.
     // Then starts the game.
@@ -46,15 +50,22 @@ public class PlayController {
     // The initializer for this class is basically useless, because
     // we need so much information from the Start screen before the
     // Play screen can do anything.
-    public void setOptions(AgentType red, AgentType white, int s, String botType) {
-        player_red = red;
-        player_white = white;
-        this.botType = botType;
-        clickCount = 0;
+    public void setOptions(AgentType red, AgentType white, String redBotType, String whiteBotType,
+                           int size, int depthOne, int depthTwo, StaticEval evalOne, StaticEval evalTwo) {
 
-        gameboard = new Board(s);
-        gameboard.setPlayer(Player.RED, player_red);
-        gameboard.setPlayer(Player.WHITE, player_white);
+        this.playerRed = red;
+        this.playerWhite = white;
+        this.redBotType = redBotType;
+        this.whiteBotType = whiteBotType;
+        this.redBotType = redBotType;
+        this.depthOne = depthOne;
+        this.depthTwo = depthTwo;
+        this.evalOne = evalOne;
+        this.evalTwo = evalTwo;
+
+        gameboard = new Board(size);
+        gameboard.setPlayer(Player.RED, playerRed);
+        gameboard.setPlayer(Player.WHITE, playerWhite);
 
         // This is where we'll draw the game as it progresses
         gc = canvas.getGraphicsContext2D();
@@ -62,13 +73,23 @@ public class PlayController {
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(5);
         drawBoard();
+        clickCount = 0;
 
-        Agent bot = new AlphaBetaAI(9);
+        if (redBotType == "Random AI") {
+            redBot = new RandomAI();
+        } else if (redBotType == "Alpha-Beta AI") {
+            redBot = new AlphaBetaAI(depthOne, evalOne);
+        }
+        if (whiteBotType == "Random AI") {
+            whiteBot = new RandomAI();
+        } else if (whiteBotType == "Alpha-Beta AI") {
+            whiteBot = new AlphaBetaAI(depthTwo, evalTwo);
+        }
 
         // How to handle bot moves.
-        moveHandler = new BotMoveService(gameboard, bot);
-        moveHandler.setOnSucceeded(e -> {
-            Move move = moveHandler.getValue();
+        redMoveHandler = new BotMoveService(gameboard, redBot);
+        redMoveHandler.setOnSucceeded(e -> {
+            Move move = redMoveHandler.getValue();
             gameboard.applyMove(move);
             drawMove(move, gameboard.getTurn());
 
@@ -78,7 +99,23 @@ public class PlayController {
                 botMove();
             }
         });
-        moveHandler.setOnFailed(e -> {
+        redMoveHandler.setOnFailed(e -> {
+            e.getSource().getException().printStackTrace();
+        });
+
+        whiteMoveHandler = new BotMoveService(gameboard, whiteBot);
+        whiteMoveHandler.setOnSucceeded(e -> {
+            Move move = whiteMoveHandler.getValue();
+            gameboard.applyMove(move);
+            drawMove(move, gameboard.getTurn());
+
+            if (gameboard.isOver()) {
+                transitionToFinish();
+            } else {
+                botMove();
+            }
+        });
+        whiteMoveHandler.setOnFailed(e -> {
             e.getSource().getException().printStackTrace();
         });
 
@@ -90,8 +127,7 @@ public class PlayController {
                 Square square = gameboard.getSquare(x, y);
                 // If it's the first click of a move, show the available options.
                 if (clickCount % 2 == 0 && square.getContents() != null) {
-                    currentLegals = gameboard.getLegalMovesFor(
-                            square, gameboard.getTurn(), square.getContents().getType(), null);
+                    currentLegals = gameboard.getLegalMovesFor(square);
                     for (Move m : currentLegals) {
                         Square dest = m.getDestination();
                         drawPotential(dest);
@@ -120,8 +156,8 @@ public class PlayController {
             }
         });
 
-        // Start the game off if a bot is X.
-        if (player_red.equals(AgentType.BOT)) {
+        // Start the game off if a bot is red.
+        if (playerRed.equals(AgentType.BOT)) {
             botMove();
         }
     }
@@ -130,7 +166,11 @@ public class PlayController {
     private void botMove() {
         // If the bot needs to make a move, then let it.
         if (gameboard.whoHasTheTurn().equals(AgentType.BOT)) {
-            moveHandler.restart();
+            if (gameboard.getTurn() == Player.RED) {
+                redMoveHandler.restart();
+            } else {
+                whiteMoveHandler.restart();
+            }
         }
     }
 
@@ -224,8 +264,8 @@ public class PlayController {
 
                 // 2. If a human won the game, make the finish background green.
                 Player winner = gameboard.findWinner();
-                boolean humanWon = (winner == Player.RED && player_red == AgentType.HUMAN) ||
-                        (winner == Player.WHITE && player_white == AgentType.HUMAN);
+                boolean humanWon = (winner == Player.RED && playerRed == AgentType.HUMAN) ||
+                        (winner == Player.WHITE && playerWhite == AgentType.HUMAN);
 
                 // 3. Let the finish controller know who won the game and what to use as a background.
                 Parent finishParent;
@@ -236,7 +276,8 @@ public class PlayController {
                 }
                 FinishController finishController = loader.getController();
                 finishController.setOptions(winner, finalState,
-                        player_red, player_white, gameboard.getSize(), botType, humanWon);
+                        playerRed, playerWhite, redBotType, whiteBotType, humanWon, gameboard.getSize(),
+                        depthOne, depthTwo, evalOne, evalTwo);
 
                 // 4. Display the finish scene in the window.
                 Scene finishScene = new Scene(finishParent);

@@ -38,6 +38,9 @@ public class Move {
         if (!this.destination.equals(next.origin)) {
             throw new IllegalArgumentException("Unallowed sequence of moves");
         }
+        if (next == null) {
+            return this;
+        }
         List<Square> allCaptures = new ArrayList<>();
         allCaptures.addAll(this.getCaptures());
         allCaptures.addAll(next.getCaptures());

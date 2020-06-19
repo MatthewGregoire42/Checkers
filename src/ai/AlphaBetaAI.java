@@ -2,6 +2,7 @@ package ai;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import checkers.Board;
 import checkers.Board.*;
@@ -11,10 +12,18 @@ import checkers.Square;
 
 public class AlphaBetaAI implements Agent {
 
-    int depth;
+    public enum StaticEval {
+        PIECEVALUE;
+    }
 
-    public AlphaBetaAI(int depth) {
+    private int depth;
+    private StaticEval evalType;
+    private Random random;
+
+    public AlphaBetaAI(int depth, StaticEval evalType) {
         this.depth = depth;
+        this.evalType = evalType;
+        this.random = new Random();
     }
 
     @Override
@@ -23,7 +32,7 @@ public class AlphaBetaAI implements Agent {
         List<Square> squares = board.getPieces(who);
         List<Move> legalMoves = new ArrayList<>();
         for (Square s : squares) {
-            legalMoves.addAll(board.getLegalMovesFor(s, who, s.getContents().getType(), null));
+            legalMoves.addAll(board.getLegalMovesFor(s));
         }
 
         Move bestMove = null;
@@ -55,33 +64,51 @@ public class AlphaBetaAI implements Agent {
 
     // Red is the maximizing player, and white
     // is the minimizing player.
-    private int staticEval(Board board) {
+    private int pieceValueStaticEval(Board board) {
         int eval = 0;
+        if (board.isOver()) {
+            Player winner = board.findWinner();
+            if (winner == Player.RED) {
+                return 1000;
+            }  else if (winner == Player.WHITE) {
+                return -1000;
+            } else {
+                return 0;
+            }
+        }
         for (Square s : board.getPieces(Player.RED)) {
             if (s.getContents().getType() == Piece.Type.MAN) {
-                eval += 1;
+                if (s.getY() < board.getSize() / 2) {
+                    eval += 7;
+                } else {
+                    eval += 5;
+                }
             } else {
-                eval -= 2;
+                eval += 10;
             }
         }
         for (Square s : board.getPieces(Player.WHITE)) {
             if (s.getContents().getType() == Piece.Type.MAN) {
-                eval -= 1;
+                if (s.getY() > board.getSize() / 2) {
+                    eval -= 7;
+                } else {
+                    eval -= 5;
+                }
             } else {
-                eval -= 2;
+                eval -= 10;
             }
         }
-        return eval;
+        return eval + random.nextInt(10);
     }
 
     private int alphaBeta(Board board, int depth, int alpha, int beta, Player player) {
         if (depth == 0 || board.isOver()) {
-            return staticEval(board);
+            return pieceValueStaticEval(board);
         }
 
         List<Move> legalMoves = new ArrayList<>();
         for (Square s : board.getPieces(player)) {
-            legalMoves.addAll(board.getLegalMovesFor(s, board.getTurn(), s.getContents().getType(), null));
+            legalMoves.addAll(board.getLegalMovesFor(s));
         }
         if (player == Player.RED) {
             int maxEval = Integer.MIN_VALUE;
@@ -103,12 +130,19 @@ public class AlphaBetaAI implements Agent {
                 future.applyMove(future.transferMove(m));
                 int eval = alphaBeta(future, depth-1, alpha, beta, Player.RED);
                 minEval = Math.min(minEval, eval);
-                beta = Math.min(alpha, eval);
+                beta = Math.min(beta, eval);
                 if (beta <= alpha) {
                     break;
                 }
             }
             return minEval;
         }
+    }
+
+    public int getDepth() {
+        return depth;
+    }
+    public StaticEval getEvalType() {
+        return evalType;
     }
 }

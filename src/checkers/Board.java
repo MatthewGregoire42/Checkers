@@ -114,7 +114,12 @@ public class Board {
 
     // Assuming that the given player is on the given square, return all
     // legal moves for that particular piece.
-    public List<Move> getLegalMovesFor(Square square, Player player, Piece.Type type, Move chained) {
+
+    public List<Move> getLegalMovesFor(Square square) {
+        return getLegalMovesFor(square, turn, square.getContents().getType(), null);
+    }
+
+    private List<Move> getLegalMovesFor(Square square, Player player, Piece.Type type, Move chained) {
         if (square == null || player == null) {
             throw new IllegalArgumentException("Invalid arguments.");
         }
@@ -144,10 +149,12 @@ public class Board {
                         // Also make sure you're not capturing the same piece twice.
                         if (chained == null || !chained.getCaptures().contains(n)) {
                             Move capture = new Move(square, dest, n);
+                            if (chained != null) {
+                                capture = chained.followedBy(capture);
+                            }
                             legalMoves.add(capture);
                             // Search for chained captures.
-                            List<Move> chains = getLegalMovesFor(dest, player, type, capture);
-                            legalMoves.addAll(capture.followedByAll(chains));
+                            legalMoves.addAll(getLegalMovesFor(dest, player, type, capture));
                         }
                     }
                 }
@@ -244,6 +251,20 @@ public class Board {
             }
             return Player.RED;
         }
+    }
+
+    public boolean inEnding() {
+        for (Square s : redPieceSquares) {
+            if (s.getContents().getType() == Piece.Type.MAN) {
+                return false;
+            }
+        }
+        for (Square s : whitePieceSquares) {
+            if (s.getContents().getType() == Piece.Type.MAN) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public boolean isOver() {

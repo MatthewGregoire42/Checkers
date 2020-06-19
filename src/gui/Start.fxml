@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.image.ImageView?>
 
-<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="gui.StartController" spacing="40" alignment="CENTER">
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="gui.StartController" spacing="30" alignment="CENTER">
     <style>
         -fx-background-color: rgb(200, 255, 200);
         -fx-font: 16 system;
@@ -23,15 +23,35 @@
         <RadioButton text="10" toggleGroup="$boardSize" fx:id="ten"/>
     </HBox>
     <HBox spacing="20" alignment="CENTER">
-        <VBox spacing="20" alignment="CENTER">
-            <Label text="Player 1:"/>
-            <RadioButton text="Human" toggleGroup="$playerOne" fx:id="humanOne"/>
-            <RadioButton text="Random AI" toggleGroup="$playerOne" fx:id="randomOne"/>
+        <VBox>
+            <Label text="Player one"/>
+            <ChoiceBox fx:id="playerOne"/>
         </VBox>
-        <VBox spacing="20" alignment="CENTER">
-            <Label text="Player 2:"/>
-            <RadioButton text="Human" toggleGroup="$playerTwo" fx:id="humanTwo"/>
-            <RadioButton text="Random AI" toggleGroup="$playerTwo" fx:id="randomTwo"/>
+        <VBox>
+            <Label text="Player two"/>
+            <ChoiceBox fx:id="playerTwo"/>
+        </VBox>
+    </HBox>
+    <HBox spacing="20" alignment="CENTER">
+        <VBox alignment="CENTER">
+            <Label text="Alpha-Beta depth"/>
+            <Slider min="0" max="10" majorTickUnit="1" minorTickCount="0" showTickLabels="true"
+                    showTickMarks="true" snapToTicks="true" prefWidth="250" fx:id="depthSliderOne"/>
+        </VBox>
+        <VBox alignment="CENTER">
+            <Label text="Alpha-Beta depth"/>
+            <Slider min="0" max="10" majorTickUnit="1" minorTickCount="0" showTickLabels="true"
+                    showTickMarks="true" snapToTicks="true" prefWidth="250" fx:id="depthSliderTwo"/>
+        </VBox>
+    </HBox>
+    <HBox spacing="20" alignment="CENTER">
+        <VBox alignment="CENTER">
+            <Label text="Alpha-Beta evaluation function"/>
+            <ChoiceBox fx:id="alphaBetaEvalOptionsOne"/>
+        </VBox>
+        <VBox alignment="CENTER">
+            <Label text="Alpha-Beta evaluation function"/>
+            <ChoiceBox fx:id="alphaBetaEvalOptionsTwo"/>
         </VBox>
     </HBox>
     <Button text="Play!" onAction="#pressPlay" alignment="CENTER"/>

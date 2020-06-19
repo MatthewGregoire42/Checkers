@@ -19,8 +19,7 @@ public class Main extends Application {
         VBox start = startLoader.<VBox>load();
         Scene scene = new Scene(start, X_DIM, Y_DIM);
 
-        // TODO: add a checkers icon
-        // primaryStage.getIcons().add(new Image("resources/icon.png"));
+        primaryStage.getIcons().add(new Image("resources/icon.png"));
 
         primaryStage.setScene(scene);
         primaryStage.setTitle("Checkers");

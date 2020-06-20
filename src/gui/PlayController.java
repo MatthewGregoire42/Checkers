@@ -70,7 +70,7 @@ public class PlayController {
         gameboard.setPlayer(Player.RED, players[0]);
         gameboard.setPlayer(Player.WHITE, players[1]);
 
-        // This is where we'll draw the game as it progresses
+        // This is where we'll draw the game as it progresses.
         gc = canvas.getGraphicsContext2D();
         gc.setFill(Color.WHITE);
         gc.setStroke(Color.BLACK);
@@ -82,12 +82,12 @@ public class PlayController {
         if (botTypes[0].equals("Random AI")) {
             bots[0] = new RandomAI();
         } else if (botTypes[0].equals("Alpha-Beta AI")) {
-            bots[0] = new AlphaBetaAI(options[0], options[0], timed[0], evals[0]);
+            bots[0] = new AlphaBetaAI(options[0], timed[0], evals[0]);
         }
         if (botTypes[1].equals("Random AI")) {
             bots[1] = new RandomAI();
         } else if (botTypes[1].equals("Alpha-Beta AI")) {
-            bots[1] = new AlphaBetaAI(options[1], options[1], timed[1], evals[1]);
+            bots[1] = new AlphaBetaAI(options[1], timed[1], evals[1]);
         }
 
         // How to handle bot moves.
@@ -148,7 +148,9 @@ public class PlayController {
             drawMove(move, gameboard.getTurn());
 
             if (gameboard.isOver()) {
-                transitionToFinish();
+                if (!gameboard.isHalted()) {
+                    transitionToFinish();
+                }
             } else {
                 botMove();
             }
@@ -285,6 +287,7 @@ public class PlayController {
 
     @FXML private void handleKeyPressed(KeyEvent e) throws Exception {
         if (e.getCode() == KeyCode.ESCAPE) {
+            gameboard.halt();
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("Start.fxml"));
             Parent startParent = loader.load();

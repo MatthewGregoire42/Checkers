@@ -12,6 +12,7 @@ public class Board {
         HUMAN, BOT;
     }
 
+    private boolean halted;
     private int size;
     private Square[][] board;
     private Player turn; // The player who needs to go next.
@@ -23,6 +24,7 @@ public class Board {
         if ((size % 2) != 0) {
             throw new IllegalArgumentException("Board must have even size.");
         }
+        this.halted = false;
         this.size = size;
         this.board = new Square[size][size];
         this.whitePieceSquares = new ArrayList<>();
@@ -277,6 +279,9 @@ public class Board {
     }
 
     public boolean isOver() {
+        if (halted) {
+            return true;
+        }
         return findWinner() != null;
     }
 
@@ -347,6 +352,14 @@ public class Board {
             System.out.println(line);
         }
         System.out.println("--------------------");
+    }
+
+    public void halt() {
+        halted = true;
+    }
+
+    public boolean isHalted() {
+        return halted;
     }
 
 }

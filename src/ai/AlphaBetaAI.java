@@ -1,5 +1,6 @@
 package ai;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -16,14 +17,18 @@ public class AlphaBetaAI implements Agent {
     }
 
     private int depth;
-    private int timeLimitNano;
+    private long timeLimitNano;
     private boolean timed;
     private StaticEval evalType;
     private Random random;
 
-    public AlphaBetaAI(int depth, int timeLimitSeconds, boolean timed, StaticEval evalType) {
-        this.depth = depth;
-        this.timeLimitNano = timeLimitSeconds*1000000000;
+    public AlphaBetaAI(int strength, boolean timed, StaticEval evalType) {
+        this.depth = strength;
+        if (timed) {
+            this.timeLimitNano = (long) strength*1000000000;
+        } else {
+            this.timeLimitNano = Long.MAX_VALUE;
+        }
         this.timed = timed;
         this.evalType = evalType;
         this.random = new Random();
@@ -31,10 +36,11 @@ public class AlphaBetaAI implements Agent {
 
     @Override
     public Move chooseMove(Board board) {
+        long start = System.nanoTime();
         Player who = board.getTurn();
         List<Move> legalMoves = board.getAllLegalMoves(board.getTurn());
 
-        long timePerMove = timeLimitNano / legalMoves.size();
+        long timePerMove = timeLimitNano / ((long) legalMoves.size());
 
         Move bestMove = null;
         if (who == Player.RED) {
@@ -44,6 +50,7 @@ public class AlphaBetaAI implements Agent {
                 future.applyMove(future.transferMove(m));
                 int eval;
                 if (timed) {
+                    // System.out.println("Total time " + timeLimitNano + " Time per move: " + timePerMove);
                     eval = timedAlphaBeta(future, Player.WHITE, timePerMove);
                 } else {
                     eval = alphaBeta(future, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, Player.WHITE);
@@ -70,6 +77,7 @@ public class AlphaBetaAI implements Agent {
                 }
             }
         }
+        System.out.println((System.nanoTime()-start)/1000000);
         return bestMove;
     }
 
@@ -186,16 +194,19 @@ public class AlphaBetaAI implements Agent {
     }
 
     // TODO: Implement Zobrist hashing to avoid re-computing positions.
+    // TODO: Make the actual time spent thinking closer to the given time limit.
     private int timedAlphaBeta(Board board, Player player, long timeLimitNano) {
         long start = System.nanoTime();
         long end = start + timeLimitNano;
-        int result = 0;
         int depth = 0;
+        int eval = 0;
         while(System.nanoTime() < end) {
-            result = alphaBeta(board, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, player);
+            eval = alphaBeta(board, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, player);
             depth++;
         }
-        return result;
+        // Return the second-to-last result found, because the last computation
+        // will have been cut short.
+        return eval;
     }
 
     public int getDepth() {

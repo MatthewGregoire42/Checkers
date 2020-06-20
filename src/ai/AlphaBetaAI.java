@@ -60,7 +60,7 @@ public class AlphaBetaAI implements Agent {
                 future.applyMove(future.transferMove(m));
                 int eval;
                 if (timed) {
-                    eval = timedAlphaBeta(future, Player.WHITE, timePerMove);
+                    eval = timedAlphaBeta(future, Player.RED, timePerMove);
                 } else {
                     eval = alphaBeta(future, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, Player.RED);
                 }
@@ -186,7 +186,6 @@ public class AlphaBetaAI implements Agent {
     }
 
     // TODO: Implement Zobrist hashing to avoid re-computing positions.
-    // timeLimit is measured in nanoseconds.
     private int timedAlphaBeta(Board board, Player player, long timeLimitNano) {
         long start = System.nanoTime();
         long end = start + timeLimitNano;

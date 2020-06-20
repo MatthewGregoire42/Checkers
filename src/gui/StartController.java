@@ -1,9 +1,5 @@
 package gui;
 
-import ai.Agent;
-import ai.AlphaBetaAI;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
@@ -28,11 +24,18 @@ public class StartController {
     @FXML private ChoiceBox<String> playerOne;
     @FXML private ChoiceBox<String> playerTwo;
 
-    @FXML private Slider depthSliderOne;
-    @FXML private Slider depthSliderTwo;
+    @FXML private Slider strengthSliderOne;
+    @FXML private Slider strengthSliderTwo;
 
-    @FXML private ChoiceBox<String> alphaBetaEvalOptionsOne;
-    @FXML private ChoiceBox<String> alphaBetaEvalOptionsTwo;
+    @FXML private ChoiceBox<String> alphaBetaEvalOne;
+    @FXML private ChoiceBox<String> alphaBetaEvalTwo;
+
+    @FXML private ToggleGroup depthOrStrengthOne = new ToggleGroup();
+    @FXML private RadioButton depthOne;
+    @FXML private RadioButton timeOne;
+    @FXML private ToggleGroup depthOrStrengthTwo = new ToggleGroup();
+    @FXML private RadioButton depthTwo;
+    @FXML private RadioButton timeTwo;
 
     @FXML private void initialize() {
         six.setToggleGroup(boardSize);
@@ -40,28 +43,35 @@ public class StartController {
         ten.setToggleGroup(boardSize);
         boardSize.selectToggle(eight);
 
+        depthOne.setToggleGroup(depthOrStrengthOne);
+        timeOne.setToggleGroup(depthOrStrengthOne);
+        depthOrStrengthOne.selectToggle(depthOne);
+
+        depthTwo.setToggleGroup(depthOrStrengthTwo);
+        timeTwo.setToggleGroup(depthOrStrengthTwo);
+        depthOrStrengthTwo.selectToggle(depthTwo);
+
         playerOne.getItems().addAll("Human", "Random AI", "Alpha-Beta AI");
         playerOne.setValue("Human");
         playerTwo.getItems().addAll("Human", "Random AI", "Alpha-Beta AI");
         playerTwo.setValue("Alpha-Beta AI");
 
-        alphaBetaEvalOptionsOne.getItems().addAll("Piece Value", "Piece Value with Ending");
-        alphaBetaEvalOptionsOne.setValue("Piece Value");
-        alphaBetaEvalOptionsTwo.getItems().addAll("Piece Value", "Piece Value with Ending");
-        alphaBetaEvalOptionsTwo.setValue("Piece Value");
+        alphaBetaEvalOne.getItems().addAll("Piece Value", "Piece Value with Ending");
+        alphaBetaEvalOne.setValue("Piece Value");
+        alphaBetaEvalTwo.getItems().addAll("Piece Value", "Piece Value with Ending");
+        alphaBetaEvalTwo.setValue("Piece Value");
 
         StringProperty alphaBetaSelected = new SimpleStringProperty("Alpha-Beta AI");
-        depthSliderOne.disableProperty().bind(playerOne.valueProperty()
-                .isNotEqualTo(alphaBetaSelected));
-        depthSliderTwo.disableProperty().bind(playerTwo.valueProperty()
-                .isNotEqualTo(alphaBetaSelected));
-        alphaBetaEvalOptionsOne.disableProperty().bind(playerOne.valueProperty()
-                .isNotEqualTo(alphaBetaSelected));
-        alphaBetaEvalOptionsTwo.disableProperty().bind(playerTwo.valueProperty()
-                .isNotEqualTo(alphaBetaSelected));
 
-        depthSliderOne.setValue(5);
-        depthSliderTwo.setValue(5);
+        Control[] controlsOne = {depthOne, timeOne, strengthSliderOne, alphaBetaEvalOne};
+        Control[] controlsTwo = {depthTwo, timeTwo, strengthSliderTwo, alphaBetaEvalTwo};
+
+        for (Control c : controlsOne) {
+            c.disableProperty().bind(playerOne.valueProperty().isNotEqualTo(alphaBetaSelected));
+        }
+        for (Control c : controlsTwo) {
+            c.disableProperty().bind(playerTwo.valueProperty().isNotEqualTo(alphaBetaSelected));
+        }
     }
 
     // What to do when the user presses the "play" button.
@@ -92,18 +102,18 @@ public class StartController {
             size = 10;
         }
 
-        int[] options = {(int) depthSliderOne.getValue(), 0, (int) depthSliderTwo.getValue(), 0};
+        int[] options = {(int) strengthSliderOne.getValue(), (int) strengthSliderTwo.getValue()};
 
-        boolean[] timed = {false, false};
+        boolean[] timed = {timeOne.isSelected(), timeTwo.isSelected()};
 
         StaticEval[] evals = new StaticEval[2];
 
-        if (alphaBetaEvalOptionsOne.getValue().equals("Piece Value")) {
+        if (alphaBetaEvalOne.getValue().equals("Piece Value")) {
             evals[0] = StaticEval.PIECEVALUE;
         } else {
             evals[0] = StaticEval.PIECEVALUE_AND_ENDING;
         }
-        if (alphaBetaEvalOptionsTwo.getValue().equals("Piece Value")) {
+        if (alphaBetaEvalTwo.getValue().equals("Piece Value")) {
             evals[1] = StaticEval.PIECEVALUE;
         } else {
             evals[1] = StaticEval.PIECEVALUE_AND_ENDING;

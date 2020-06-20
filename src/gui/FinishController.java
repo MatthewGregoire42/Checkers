@@ -77,8 +77,6 @@ public class FinishController {
         loader.setLocation(getClass().getResource("Start.fxml"));
         Parent startParent = loader.load();
 
-        StartController startController = loader.getController();
-
         Scene startScene = new Scene(startParent);
         Stage window = (Stage) ((Node) e.getSource()).getScene().getWindow();
         window.setScene(startScene);

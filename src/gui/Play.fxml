@@ -12,7 +12,7 @@
     <style>
         -fx-background-color: white;
     </style>
-    <Canvas fx:id="canvas">
+    <Canvas fx:id="canvas" onKeyPressed="#handleKeyPressed">
         <height>600</height>
         <width>600</width>
     </Canvas>

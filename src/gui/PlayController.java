@@ -12,12 +12,15 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -55,6 +58,8 @@ public class PlayController {
     public void setOptions(AgentType[] players, String[] botTypes, int size,
                            int[] options, boolean[] timed, StaticEval[] evals) {
 
+        canvas.requestFocus();
+
         this.players = players;
         this.botTypes = botTypes;
         this.options = options;
@@ -77,12 +82,12 @@ public class PlayController {
         if (botTypes[0].equals("Random AI")) {
             bots[0] = new RandomAI();
         } else if (botTypes[0].equals("Alpha-Beta AI")) {
-            bots[0] = new AlphaBetaAI(options[0], options[1], timed[0], evals[0]);
+            bots[0] = new AlphaBetaAI(options[0], options[0], timed[0], evals[0]);
         }
         if (botTypes[1].equals("Random AI")) {
             bots[1] = new RandomAI();
         } else if (botTypes[1].equals("Alpha-Beta AI")) {
-            bots[1] = new AlphaBetaAI(options[2], options[3], timed[1], evals[1]);
+            bots[1] = new AlphaBetaAI(options[1], options[1], timed[1], evals[1]);
         }
 
         // How to handle bot moves.
@@ -276,6 +281,18 @@ public class PlayController {
             }
         });
         pause.restart();
+    }
+
+    @FXML private void handleKeyPressed(KeyEvent e) throws Exception {
+        if (e.getCode() == KeyCode.ESCAPE) {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("Start.fxml"));
+            Parent startParent = loader.load();
+
+            Scene startScene = new Scene(startParent);
+            Stage window = (Stage) ((Node) e.getSource()).getScene().getWindow();
+            window.setScene(startScene);
+        }
     }
 
 }

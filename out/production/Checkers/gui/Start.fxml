@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.image.ImageView?>
 
-<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="gui.StartController" spacing="30" alignment="CENTER">
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="gui.StartController" spacing="20" alignment="CENTER">
     <style>
         -fx-background-color: rgb(200, 255, 200);
         -fx-font: 16 system;
@@ -34,24 +34,26 @@
     </HBox>
     <HBox spacing="20" alignment="CENTER">
         <VBox alignment="CENTER">
-            <Label text="Alpha-Beta depth"/>
-            <Slider min="0" max="10" majorTickUnit="1" minorTickCount="0" showTickLabels="true"
-                    showTickMarks="true" snapToTicks="true" prefWidth="250" fx:id="depthSliderOne"/>
-        </VBox>
-        <VBox alignment="CENTER">
-            <Label text="Alpha-Beta depth"/>
-            <Slider min="0" max="10" majorTickUnit="1" minorTickCount="0" showTickLabels="true"
-                    showTickMarks="true" snapToTicks="true" prefWidth="250" fx:id="depthSliderTwo"/>
-        </VBox>
-    </HBox>
-    <HBox spacing="20" alignment="CENTER">
-        <VBox alignment="CENTER">
+            <HBox spacing="10" alignment="CENTER">
+                <RadioButton text="Depth Limit" toggleGroup="$depthOrStrengthOne" fx:id="depthOne"/>
+                <RadioButton text="Time Limit" toggleGroup="$depthOrStrengthOne" fx:id="timeOne"/>
+            </HBox>
+            <Label fx:id="sliderLabelOne"/>
+            <Slider min="0" max="10" majorTickUnit="1" minorTickCount="0" showTickLabels="true" value="5"
+                    showTickMarks="true" snapToTicks="true" prefWidth="250" fx:id="strengthSliderOne"/>
             <Label text="Alpha-Beta evaluation function"/>
-            <ChoiceBox fx:id="alphaBetaEvalOptionsOne"/>
+            <ChoiceBox fx:id="alphaBetaEvalOne"/>
         </VBox>
         <VBox alignment="CENTER">
+            <HBox spacing="10" alignment="CENTER">
+                <RadioButton text="Depth Limit" toggleGroup="$depthOrStrengthTwo" fx:id="depthTwo"/>
+                <RadioButton text="Time Limit" toggleGroup="$depthOrStrengthTwo" fx:id="timeTwo"/>
+            </HBox>
+            <Label fx:id="sliderLabelTwo"/>
+            <Slider min="0" max="10" majorTickUnit="1" minorTickCount="0" showTickLabels="true" value="5"
+                    showTickMarks="true" snapToTicks="true" prefWidth="250" fx:id="strengthSliderTwo"/>
             <Label text="Alpha-Beta evaluation function"/>
-            <ChoiceBox fx:id="alphaBetaEvalOptionsTwo"/>
+            <ChoiceBox fx:id="alphaBetaEvalTwo"/>
         </VBox>
     </HBox>
     <Button text="Play!" onAction="#pressPlay" alignment="CENTER"/>

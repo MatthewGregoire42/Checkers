@@ -13,7 +13,7 @@ import checkers.Square;
 public class AlphaBetaAI implements Agent {
 
     public enum StaticEval {
-        PIECEVALUE, PIECEVALUE_AND_ENDING;
+        BASIC_PIECEVALUE, POSITIONAL_PIECEVALUE;
     }
 
     private int depth;
@@ -77,13 +77,13 @@ public class AlphaBetaAI implements Agent {
                 }
             }
         }
-        System.out.println((System.nanoTime()-start)/1000000);
         return bestMove;
     }
 
     // Red is the maximizing player, and white
     // is the minimizing player.
-    private int pieceValueStaticEval(Board board) {
+    // TODO: Add more static evaluation options.
+    private int basicPieceValueStaticEval(Board board) {
         int eval = 0;
         if (board.isOver()) {
             Player winner = board.findWinner();
@@ -97,22 +97,14 @@ public class AlphaBetaAI implements Agent {
         }
         for (Square s : board.getPieces(Player.RED)) {
             if (s.getContents().getType() == Piece.Type.MAN) {
-                if (s.getY() < board.getSize() / 2) {
-                    eval += 7;
-                } else {
-                    eval += 5;
-                }
+                eval += 5;
             } else {
                 eval += 10;
             }
         }
         for (Square s : board.getPieces(Player.WHITE)) {
             if (s.getContents().getType() == Piece.Type.MAN) {
-                if (s.getY() > board.getSize() / 2) {
-                    eval -= 7;
-                } else {
-                    eval -= 5;
-                }
+                eval -= 5;
             } else {
                 eval -= 10;
             }
@@ -120,46 +112,64 @@ public class AlphaBetaAI implements Agent {
         return eval + random.nextInt(10) - 5;
     }
 
-    private int pieceEvalWithEndgame(Board board) {
+    private int positionalPieceValueStaticEval(Board board) {
+        int redWeight, whiteWeight;
+        if (board.getTurn() == Player.RED) {
+            redWeight = 0;
+            whiteWeight = 10;
+        } else {
+            redWeight = 10;
+            whiteWeight = -10;
+        }
         int eval = 0;
         if (board.isOver()) {
             Player winner = board.findWinner();
             if (winner == Player.RED) {
-                return 1000;
-            } else if (winner == Player.WHITE) {
-                return -1000;
+                return 10000;
+            }  else if (winner == Player.WHITE) {
+                return -10000;
             } else {
                 return 0;
             }
-        } else if (board.inEnding()) {
-            List<Square> reds = board.getPieces(Player.RED);
-            List<Square> whites = board.getPieces(Player.WHITE);
-            int pieceDifference = reds.size() - whites.size();
-            // Red has more pieces and needs to get closer to white.
-            if (pieceDifference > 0) {
-                for (Square s : reds) {
-                    for (Square t : whites) {
-                        eval -= s.distanceTo(t);
-                    }
-                }
-            // White has more pieces and distance to red is penalized.
-            } else {
-                for (Square s : reds) {
-                    for (Square t : whites) {
-                        eval += s.distanceTo(t);
-                    }
-                }
-            }
         }
-        return pieceValueStaticEval(board);
+        for (Square s : board.getPieces(Player.RED)) {
+            if (s.getContents().getType() == Piece.Type.MAN) {
+                if (s.getY() < board.getSize() / 2) {
+                    eval += 80 + redWeight;
+                } else if (s.getY() == board.getSize()-1) {
+                    eval += 70 + redWeight;
+                } else {
+                    eval += 50 + redWeight;
+                }
+            } else {
+                eval += 120 + redWeight;
+            }
+            eval -= (Math.abs(s.getX() - board.getSize()/2)*3);
+        }
+        for (Square s : board.getPieces(Player.WHITE)) {
+            if (s.getContents().getType() == Piece.Type.MAN) {
+                if (s.getY() > board.getSize() / 2) {
+                    eval -= 80 - whiteWeight;
+                } else if (s.getY() == 0) {
+                    eval -= 70 - whiteWeight;
+                } else {
+                    eval -= 50 - whiteWeight;
+                }
+            } else {
+                eval -= 120 - whiteWeight;
+            }
+            eval -= (Math.abs(s.getX() - board.getSize()/2));
+        }
+        return eval + random.nextInt(10) - 5;
     }
+
 
     private int alphaBeta(Board board, int depth, int alpha, int beta, Player player) {
         if (depth == 0 || board.isOver()) {
-            if (evalType == StaticEval.PIECEVALUE) {
-                return pieceValueStaticEval(board);
+            if (evalType == StaticEval.BASIC_PIECEVALUE) {
+                return basicPieceValueStaticEval(board);
             } else {
-                return pieceEvalWithEndgame(board);
+                return positionalPieceValueStaticEval(board);
             }
         }
 

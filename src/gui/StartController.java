@@ -56,10 +56,10 @@ public class StartController {
         playerTwo.getItems().addAll("Human", "Random AI", "Alpha-Beta AI");
         playerTwo.setValue("Alpha-Beta AI");
 
-        alphaBetaEvalOne.getItems().addAll("Piece Value", "Piece Value with Ending");
-        alphaBetaEvalOne.setValue("Piece Value");
-        alphaBetaEvalTwo.getItems().addAll("Piece Value", "Piece Value with Ending");
-        alphaBetaEvalTwo.setValue("Piece Value");
+        alphaBetaEvalOne.getItems().addAll("Basic Piece Value", "Positional Piece Value");
+        alphaBetaEvalOne.setValue("Positional Piece Value");
+        alphaBetaEvalTwo.getItems().addAll("Basic Piece Value", "Positional Piece Value");
+        alphaBetaEvalTwo.setValue("Basic Piece Value");
 
         StringProperty alphaBetaSelected = new SimpleStringProperty("Alpha-Beta AI");
 
@@ -108,15 +108,15 @@ public class StartController {
 
         StaticEval[] evals = new StaticEval[2];
 
-        if (alphaBetaEvalOne.getValue().equals("Piece Value")) {
-            evals[0] = StaticEval.PIECEVALUE;
+        if (alphaBetaEvalOne.getValue().equals("Basic Piece Value")) {
+            evals[0] = StaticEval.BASIC_PIECEVALUE;
         } else {
-            evals[0] = StaticEval.PIECEVALUE_AND_ENDING;
+            evals[0] = StaticEval.POSITIONAL_PIECEVALUE;
         }
-        if (alphaBetaEvalTwo.getValue().equals("Piece Value")) {
-            evals[1] = StaticEval.PIECEVALUE;
+        if (alphaBetaEvalTwo.getValue().equals("Basic Piece Value")) {
+            evals[1] = StaticEval.BASIC_PIECEVALUE;
         } else {
-            evals[1] = StaticEval.PIECEVALUE_AND_ENDING;
+            evals[1] = StaticEval.POSITIONAL_PIECEVALUE;
         }
 
         FXMLLoader loader = new FXMLLoader();

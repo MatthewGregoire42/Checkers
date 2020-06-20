@@ -41,4 +41,9 @@ public class Square {
             return new Square(contents.copy(), x, y);
         }
     }
+
+    // Returns the taxicab distance to another square.
+    public int distanceTo(Square other) {
+        return Math.abs(x - other.getX()) + Math.abs(y - other.getY());
+    }
 }

@@ -45,9 +45,9 @@ public class StartController {
         playerTwo.getItems().addAll("Human", "Random AI", "Alpha-Beta AI");
         playerTwo.setValue("Alpha-Beta AI");
 
-        alphaBetaEvalOptionsOne.getItems().add("Piece Value");
+        alphaBetaEvalOptionsOne.getItems().addAll("Piece Value", "Piece Value with Ending");
         alphaBetaEvalOptionsOne.setValue("Piece Value");
-        alphaBetaEvalOptionsTwo.getItems().add("Piece Value");
+        alphaBetaEvalOptionsTwo.getItems().addAll("Piece Value", "Piece Value with Ending");
         alphaBetaEvalOptionsTwo.setValue("Piece Value");
 
         StringProperty alphaBetaSelected = new SimpleStringProperty("Alpha-Beta AI");
@@ -59,6 +59,9 @@ public class StartController {
                 .isNotEqualTo(alphaBetaSelected));
         alphaBetaEvalOptionsTwo.disableProperty().bind(playerTwo.valueProperty()
                 .isNotEqualTo(alphaBetaSelected));
+
+        depthSliderOne.setValue(5);
+        depthSliderTwo.setValue(5);
     }
 
     // What to do when the user presses the "play" button.
@@ -66,42 +69,20 @@ public class StartController {
     // start menu, to feed into the PlayController.
     @FXML private void pressPlay(ActionEvent e) throws Exception {
 
-        String playerOneChoice = playerOne.getValue();
-        String playerTwoChoice = playerTwo.getValue();
-
-        String evalOneString = alphaBetaEvalOptionsOne.getValue();
-        String evalTwoString = alphaBetaEvalOptionsTwo.getValue();
+        AgentType[] players = new AgentType[2];
+        String[] botTypes = {playerOne.getValue(), playerTwo.getValue()};
+        if (botTypes[0].equals("Human")) {
+            players[0] = AgentType.HUMAN;
+        } else {
+            players[0] = AgentType.BOT;
+        }
+        if (botTypes[1].equals("Human")) {
+            players[1] = AgentType.HUMAN;
+        } else {
+            players[1] = AgentType.BOT;
+        }
 
         RadioButton boardSizeButton = (RadioButton) boardSize.getSelectedToggle();
-
-        int depthOne = (int) depthSliderOne.getValue();
-        int depthTwo = (int) depthSliderTwo.getValue();
-
-        AgentType agentRed, agentWhite;
-        StaticEval evalOne, evalTwo;
-
-        if (playerOneChoice.equals("Human")) {
-            agentRed = AgentType.HUMAN;
-        } else {
-            agentRed = AgentType.BOT;
-        }
-        if (playerTwoChoice.equals("Human")) {
-            agentWhite = AgentType.HUMAN;
-        } else {
-            agentWhite = AgentType.BOT;
-        }
-
-        if (evalOneString.equals("Piece Value")) {
-            evalOne = StaticEval.PIECEVALUE;
-        } else {
-            evalOne = null;
-        }
-        if (evalTwoString.equals("Piece Value")) {
-            evalTwo = StaticEval.PIECEVALUE;
-        } else {
-            evalTwo = null;
-        }
-
         int size;
         if (boardSizeButton.equals(six)) {
             size = 6;
@@ -109,6 +90,23 @@ public class StartController {
             size = 8;
         } else {
             size = 10;
+        }
+
+        int[] options = {(int) depthSliderOne.getValue(), 0, (int) depthSliderTwo.getValue(), 0};
+
+        boolean[] timed = {false, false};
+
+        StaticEval[] evals = new StaticEval[2];
+
+        if (alphaBetaEvalOptionsOne.getValue().equals("Piece Value")) {
+            evals[0] = StaticEval.PIECEVALUE;
+        } else {
+            evals[0] = StaticEval.PIECEVALUE_AND_ENDING;
+        }
+        if (alphaBetaEvalOptionsTwo.getValue().equals("Piece Value")) {
+            evals[1] = StaticEval.PIECEVALUE;
+        } else {
+            evals[1] = StaticEval.PIECEVALUE_AND_ENDING;
         }
 
         FXMLLoader loader = new FXMLLoader();
@@ -121,8 +119,7 @@ public class StartController {
         Stage window = (Stage) ((Node) e.getSource()).getScene().getWindow();
         window.setScene(playScene);
 
-        playController.setOptions(agentRed, agentWhite, playerOneChoice, playerTwoChoice,
-                size, depthOne, depthTwo, evalOne, evalTwo);
+        playController.setOptions(players, botTypes, size, options, timed, evals);
     }
 
     // Switch to "About" scene when the user presses the "About" button.

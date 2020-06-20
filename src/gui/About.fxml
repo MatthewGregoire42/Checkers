@@ -10,18 +10,24 @@
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="gui.AboutController"
             prefHeight="600.0" prefWidth="600.0" alignment="CENTER"
-            spacing="40">
+            spacing="30">
     <style>
         -fx-background-color: rgb(153, 204, 255);
         -fx-font: 14 system;
     </style>
     <Label wrapText="true" maxWidth="300">
         <text>
-            This is a simple Tic Tac Toe application that will let you play against another human,
+            This is a simple Checkers application that will let you play against another human,
             play against a bot, or watch two bots play against each other. The random bot will select
-            random moves, while the minimax bot plays perfectly. Because of the computational strain
-            required to play larger boards perfectly, the minimax bot is only allowed to play on the
-            3x3 board.
+            random moves, while the minimax bot plays perfectly.
+        </text>
+    </Label>
+    <Label wrapText="true" maxWidth="300">
+        <text>
+            The depth slider and evaluation function controls are enabled when the Alpha-Beta AI is selected.
+            Depth controls how many moves ahead the bot looks, and the evaluation function determines how
+            the bot evaluates static positions. Soon I hope to allow for time control as well as depth
+            control for the Alpha-Beta AI.
         </text>
     </Label>
     <Label text="Written by Matthew Gregoire, 2020"/>

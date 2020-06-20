@@ -18,11 +18,7 @@ public class RandomAI implements Agent {
 
     @Override
     public Move chooseMove(Board board) {
-        List<Square> squares = board.getPieces(board.getTurn());
-        List<Move> legalMoves = new ArrayList<>();
-        for (Square s : squares) {
-            legalMoves.addAll(board.getLegalMovesFor(s));
-        }
+        List<Move> legalMoves = board.getAllLegalMoves(board.getTurn());
         if (legalMoves.size() > 1) {
             return legalMoves.get(random.nextInt(legalMoves.size()-1));
         } else {

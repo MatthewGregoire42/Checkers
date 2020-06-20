@@ -163,6 +163,14 @@ public class Board {
         return legalMoves;
     }
 
+    public List<Move> getAllLegalMoves(Player player) {
+        List<Move> moves = new ArrayList<>();
+        for (Square s : getPieces(player)) {
+            moves.addAll(getLegalMovesFor(s));
+        }
+        return moves;
+    }
+
     public void applyMove(Move m) {
         Square source = m.getOrigin();
         Square dest = m.getDestination();
@@ -254,17 +262,18 @@ public class Board {
     }
 
     public boolean inEnding() {
+        int kingCount = 0;
         for (Square s : redPieceSquares) {
-            if (s.getContents().getType() == Piece.Type.MAN) {
-                return false;
+            if (s.getContents().getType() == Piece.Type.KING) {
+                kingCount++;
             }
         }
         for (Square s : whitePieceSquares) {
-            if (s.getContents().getType() == Piece.Type.MAN) {
-                return false;
+            if (s.getContents().getType() == Piece.Type.KING) {
+                kingCount++;
             }
         }
-        return true;
+        return kingCount > 6;
     }
 
     public boolean isOver() {

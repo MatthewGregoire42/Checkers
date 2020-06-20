@@ -21,36 +21,27 @@ public class FinishController {
     @FXML private ImageView imgView;
     @FXML private VBox vbox;
 
-    private AgentType redAgentType;
-    private AgentType whiteAgentType;
-
-    private String redBotType;
-    private String whiteBotType;
-
     private int size;
 
-    private int depthOne;
-    private int depthTwo;
-
-    private StaticEval evalOne;
-    private StaticEval evalTwo;
+    private AgentType[] players;
+    private String[] botTypes;
+    private int[] options;
+    private boolean[] timed;
+    private StaticEval[] evals;
 
     // The Finish screen needs to know who won and the final board state to set as
     // the background. It also needs to know who played as X and O and what size the
     // board was, in case the user wants to play again with the same settings.
-    public void setOptions(Player won, Image image, AgentType redAgentType, AgentType whiteAgentType,
-                           String redBotType, String whiteBotType, boolean humanWon, int size,
-                           int depthOne, int depthTwo, StaticEval evalOne, StaticEval evalTwo) {
+    public void setOptions(Player won, Image image, boolean humanWon, int size,
+                           AgentType[] players, String[] botTypes, int[] options,
+                           boolean[] timed, StaticEval[] evals) {
 
-        this.redAgentType = redAgentType;
-        this.whiteAgentType = whiteAgentType;
+        this.players = players;
         this.size = size;
-        this.redBotType = redBotType;
-        this.whiteBotType = whiteBotType;
-        this.depthOne = depthOne;
-        this.depthTwo = depthTwo;
-        this.evalOne = evalOne;
-        this.evalTwo = evalTwo;
+        this.botTypes = botTypes;
+        this.options = options;
+        this.timed = timed;
+        this.evals = evals;
 
         if (humanWon) {
             vbox.setStyle("-fx-background-color: rgba(200, 255, 200, 0.8); -fx-font: 24 system;");
@@ -77,8 +68,8 @@ public class FinishController {
         Stage window = (Stage) ((Node) e.getSource()).getScene().getWindow();
         window.setScene(playScene);
 
-        playController.setOptions(redAgentType, whiteAgentType, redBotType, whiteBotType, size,
-                depthOne, depthTwo, evalOne, evalTwo);
+        playController.setOptions(players, botTypes, size,
+                options, timed, evals);
     }
 
     @FXML private void backToStart(ActionEvent e) throws Exception {

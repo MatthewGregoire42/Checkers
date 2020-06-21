@@ -36,7 +36,6 @@ public class AlphaBetaAI implements Agent {
 
     @Override
     public Move chooseMove(Board board) {
-        long start = System.nanoTime();
         Player who = board.getTurn();
         List<Move> legalMoves = board.getAllLegalMoves(board.getTurn());
 
@@ -53,7 +52,8 @@ public class AlphaBetaAI implements Agent {
                     // System.out.println("Total time " + timeLimitNano + " Time per move: " + timePerMove);
                     eval = timedAlphaBeta(future, Player.WHITE, timePerMove);
                 } else {
-                    eval = alphaBeta(future, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, Player.WHITE);
+                    eval = alphaBeta(future, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, Player.WHITE,
+                            Long.MAX_VALUE);
                 }
                 if (eval > maxEval) {
                     maxEval = eval;
@@ -69,7 +69,8 @@ public class AlphaBetaAI implements Agent {
                 if (timed) {
                     eval = timedAlphaBeta(future, Player.RED, timePerMove);
                 } else {
-                    eval = alphaBeta(future, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, Player.RED);
+                    eval = alphaBeta(future, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, Player.RED,
+                            Long.MAX_VALUE);
                 }
                 if (eval < minEval) {
                     minEval = eval;
@@ -144,7 +145,7 @@ public class AlphaBetaAI implements Agent {
             } else {
                 eval += 120 + redWeight;
             }
-            eval -= (Math.abs(s.getX() - board.getSize()/2)*3);
+            eval -= (Math.abs(s.getX() - (board.getSize()-1)/2)*2);
         }
         for (Square s : board.getPieces(Player.WHITE)) {
             if (s.getContents().getType() == Piece.Type.MAN) {
@@ -158,13 +159,16 @@ public class AlphaBetaAI implements Agent {
             } else {
                 eval -= 120 - whiteWeight;
             }
-            eval -= (Math.abs(s.getX() - board.getSize()/2));
+            eval += (Math.abs(s.getX() - (board.getSize()-1)/2)*2);
         }
         return eval + random.nextInt(10) - 5;
     }
 
 
-    private int alphaBeta(Board board, int depth, int alpha, int beta, Player player) {
+    private int alphaBeta(Board board, int depth, int alpha, int beta, Player player, long cutoff) {
+        if (System.nanoTime() > cutoff) {
+            return 0;
+        }
         if (depth == 0 || board.isOver()) {
             if (evalType == StaticEval.BASIC_PIECEVALUE) {
                 return basicPieceValueStaticEval(board);
@@ -179,7 +183,7 @@ public class AlphaBetaAI implements Agent {
             for (Move m : legalMoves) {
                 Board future = board.copy();
                 future.applyMove(future.transferMove(m));
-                int eval = alphaBeta(future, depth-1, alpha, beta, Player.WHITE);
+                int eval = alphaBeta(future, depth-1, alpha, beta, Player.WHITE, cutoff);
                 maxEval = Math.max(maxEval, eval);
                 alpha = Math.max(alpha, eval);
                 if (beta <= alpha) {
@@ -192,7 +196,7 @@ public class AlphaBetaAI implements Agent {
             for (Move m : legalMoves) {
                 Board future = board.copy();
                 future.applyMove(future.transferMove(m));
-                int eval = alphaBeta(future, depth-1, alpha, beta, Player.RED);
+                int eval = alphaBeta(future, depth-1, alpha, beta, Player.RED, cutoff);
                 minEval = Math.min(minEval, eval);
                 beta = Math.min(beta, eval);
                 if (beta <= alpha) {
@@ -210,13 +214,15 @@ public class AlphaBetaAI implements Agent {
         long end = start + timeLimitNano;
         int depth = 0;
         int eval = 0;
+        List<Integer> evals = new ArrayList<>();
         while(System.nanoTime() < end) {
-            eval = alphaBeta(board, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, player);
+            eval = alphaBeta(board, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, player, end);
+            evals.add(eval);
             depth++;
         }
         // Return the second-to-last result found, because the last computation
         // will have been cut short.
-        return eval;
+        return evals.get(evals.size()-2);
     }
 
     public int getDepth() {
